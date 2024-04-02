@@ -16,3 +16,14 @@ if uploaded_file is not None:
     # Display the first 10 rows of the data
     st.write("Data preview (first 10 rows):")
     st.write(data.head(10))
+
+
+# Add a title to the sidebar
+st.sidebar.title("Sidebar Title")
+
+# Add a text input widget to the sidebar
+sidebar_input = st.sidebar.text_input("Enter some text in the sidebar:")
+
+# Display the sidebar input in the main area
+st.write(f"Your sidebar input: {sidebar_input}")
+
