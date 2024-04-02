@@ -7,6 +7,20 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
+
+# Add a title to the sidebar
+st.sidebar.title("Model options")
+
+
+# Create a number input widget for specifying the number of clusters for k-means clustering
+n_clusters = st.sidebar.number_input("Enter the number of clusters for KMeans:", min_value=2, value=2)
+
+# Create a number input widget for specifying the max depth for the decision tree
+max_depth = st.sidebar.number_input("Enter the max depth for the Decision Tree:", min_value=1, value=3)
+
+
+
+
 # Function to run k-means clustering and calculate the silhouette score
 def run_kmeans(data, k):
     kmeans = KMeans(n_clusters=k)  # Create a KMeans instance with the specified number of clusters
@@ -41,7 +55,7 @@ if uploaded_file is not None:
     st.write("Data preview:")
     st.write(data.head())
 
-   # DELETED FROM HERE<<<<
+   
 
     # Create a button to start the analysis
     if st.button("Start Analysis"):
@@ -58,14 +72,4 @@ if uploaded_file is not None:
         st.write(pd.DataFrame({"Method": ["KMeans (Silhouette Score)", "Decision Tree (Accuracy)"],
                                "Score": [kmeans_score, dt_accuracy]}))
 
-
-# Add a title to the sidebar
-st.sidebar.title("Model options")
-
-
-# Create a number input widget for specifying the number of clusters for k-means clustering
-n_clusters = st.sidebar.number_input("Enter the number of clusters for KMeans:", min_value=2, value=2)
-
-# Create a number input widget for specifying the max depth for the decision tree
-max_depth = st.sidebar.number_input("Enter the max depth for the Decision Tree:", min_value=1, value=3)
 
