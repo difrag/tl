@@ -1,17 +1,3 @@
-import streamlit as st
-
-# Display a title
-st.title("Hello, Streamlit!")
-
-# Display a subtitle
-st.subheader("This is a subtitle")
-
-# Display plain text
-st.write("This is some plain text.")
-
-
-
-Παράδειγμα 2:
 
 import streamlit as st
 import pandas as pd
