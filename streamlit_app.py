@@ -41,11 +41,7 @@ if uploaded_file is not None:
     st.write("Data preview:")
     st.write(data.head())
 
-    # Create a number input widget for specifying the number of clusters for k-means clustering
-    n_clusters = st.number_input("Enter the number of clusters for KMeans:", min_value=2, value=2)
-
-    # Create a number input widget for specifying the max depth for the decision tree
-    max_depth = st.number_input("Enter the max depth for the Decision Tree:", min_value=1, value=3)
+    DELETED FROM HERE<<<<
 
     # Create a button to start the analysis
     if st.button("Start Analysis"):
