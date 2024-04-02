@@ -44,17 +44,6 @@ def run_decision_tree(X, y, max_depth):
     return accuracy
 
 
-# Create a number input widget for specifying the number of clusters for k-means clustering
-    n_clusters = st.number_input("Enter the number of clusters for KMeans:", min_value=2, value=2)
-
-# Create a number input widget for specifying the max depth for the decision tree
-    max_depth = st.number_input("Enter the max depth for the Decision Tree:", min_value=1, value=3)
-    
-# Create a button to start the analysis
-    if st.button("Start Analysis"):
-        # Separate the features (K-1 columns) and the target (last column) from the data
-        features = data.iloc[:, :-1]
-        target = data.iloc[:, -1]
 
 
 # Add a title to the sidebar
