@@ -1,8 +1,8 @@
 # Import necessary libraries
 import streamlit as st
 import pandas as pd
-from sklearn.cluster import KMeans
 
+from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
@@ -49,7 +49,12 @@ def run_decision_tree(X, y, max_depth):
 
 # Create a number input widget for specifying the max depth for the decision tree
     max_depth = st.number_input("Enter the max depth for the Decision Tree:", min_value=1, value=3)
-
+    
+# Create a button to start the analysis
+    if st.button("Start Analysis"):
+        # Separate the features (K-1 columns) and the target (last column) from the data
+        features = data.iloc[:, :-1]
+        target = data.iloc[:, -1]
 
 
 # Add a title to the sidebar
