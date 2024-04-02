@@ -41,7 +41,7 @@ if uploaded_file is not None:
     st.write("Data preview:")
     st.write(data.head())
 
-    DELETED FROM HERE<<<<
+   # DELETED FROM HERE<<<<
 
     # Create a button to start the analysis
     if st.button("Start Analysis"):
