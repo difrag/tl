@@ -62,13 +62,12 @@ if uploaded_file is not None:
 # Add a title to the sidebar
 st.sidebar.title("Model options")
 
-# Add a text input widget to the sidebar
-sidebar_input = st.sidebar.text_input("Enter some text in the sidebar:")
+
 # Create a number input widget for specifying the number of clusters for k-means clustering
-n_clusters = st.number_input("Enter the number of clusters for KMeans:", min_value=2, value=2)
+n_clusters = st.sidebar.number_input("Enter the number of clusters for KMeans:", min_value=2, value=2)
 
 # Create a number input widget for specifying the max depth for the decision tree
-max_depth = st.number_input("Enter the max depth for the Decision Tree:", min_value=1, value=3)
+max_depth = st.sidebar.number_input("Enter the max depth for the Decision Tree:", min_value=1, value=3)
 
 # Display the sidebar input in the main area
 st.write(f"Your sidebar input: {sidebar_input}")
