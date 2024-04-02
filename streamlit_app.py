@@ -69,5 +69,3 @@ n_clusters = st.sidebar.number_input("Enter the number of clusters for KMeans:",
 # Create a number input widget for specifying the max depth for the decision tree
 max_depth = st.sidebar.number_input("Enter the max depth for the Decision Tree:", min_value=1, value=3)
 
-# Display the sidebar input in the main area
-st.write(f"Your sidebar input: {sidebar_input}")
