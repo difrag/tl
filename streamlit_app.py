@@ -1,4 +1,3 @@
-# Import necessary libraries
 import streamlit as st
 import pandas as pd
 from sklearn.cluster import KMeans
@@ -7,69 +6,66 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
+# Set page configuration
+st.set_page_config(
+    page_title="KMeans and Decision Tree Application",
+    page_icon="🧠",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# Add a title to the sidebar
-st.sidebar.title("Model options")
-
-
-# Create a number input widget for specifying the number of clusters for k-means clustering
-n_clusters = st.sidebar.number_input("Enter the number of clusters for KMeans:", min_value=2, value=2)
-
-# Create a number input widget for specifying the max depth for the decision tree
-max_depth = st.sidebar.number_input("Enter the max depth for the Decision Tree:", min_value=1, value=3)
-
-
-
-
-# Function to run k-means clustering and calculate the silhouette score
-def run_kmeans(data, k):
-    kmeans = KMeans(n_clusters=k)  # Create a KMeans instance with the specified number of clusters
-    kmeans.fit(data)               # Fit the KMeans model to the data
-    labels = kmeans.labels_        # Get the cluster labels for each data point
-    score = silhouette_score(data, labels)  # Calculate the silhouette score for the clustering
-    return labels, score
-
-# Function to run decision tree classification and calculate the accuracy
-def run_decision_tree(X, y, max_depth):
-    # Split the data into training and testing sets (70% training, 30% testing)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-    
-    dt = DecisionTreeClassifier(max_depth=max_depth)  # Create a DecisionTreeClassifier instance with the specified max_depth
-    dt.fit(X_train, y_train)       # Fit the classifier to the training data
-    y_pred = dt.predict(X_test)    # Predict labels for the test data
-    accuracy = accuracy_score(y_test, y_pred)  # Calculate the accuracy of the classifier
-    return accuracy
-
-# Create a Streamlit title
+# Add a title and description
 st.title("KMeans and Decision Tree Application")
+st.write("Upload a tab-separated TXT file (no header) and explore the data using KMeans clustering and Decision Tree classification.")
 
-# Create a file uploader widget for uploading a tab-separated TXT file
-uploaded_file = st.file_uploader("Upload a tab-separated TXT file (no header)", type="txt")
+# Create a file uploader widget
+uploaded_file = st.file_uploader("Upload a file", type="txt")
 
-# Check if a file has been uploaded
 if uploaded_file is not None:
-    # Read the uploaded file as a DataFrame using pandas, assuming no header
+    # Read the uploaded file as a DataFrame
     data = pd.read_csv(uploaded_file, sep='\t', header=None)
-    
+
     # Display a preview of the data
-    st.write("Data preview:")
+    st.subheader("Data Preview")
     st.write(data.head())
 
-   
+    # Create a sidebar for model options
+    st.sidebar.title("Model Options")
 
-    # Create a button to start the analysis
+    # Create number input widgets for KMeans and Decision Tree
+    n_clusters = st.sidebar.number_input("Number of Clusters for KMeans", min_value=2, value=2)
+    max_depth = st.sidebar.number_input("Max Depth for Decision Tree", min_value=1, value=3)
+
+    # Run the analysis when the user clicks the button
     if st.button("Start Analysis"):
-        # Separate the features (K-1 columns) and the target (last column) from the data
+        # Separate the features and target
         features = data.iloc[:, :-1]
         target = data.iloc[:, -1]
 
-        # Run k-means clustering and decision tree classification on the data
+        # Run KMeans and Decision Tree
         kmeans_labels, kmeans_score = run_kmeans(features, n_clusters)
         dt_accuracy = run_decision_tree(features, target, max_depth)
 
-        # Display the evaluation results in a table
-        st.write("Evaluation Results:")
-        st.write(pd.DataFrame({"Method": ["KMeans (Silhouette Score)", "Decision Tree (Accuracy)"],
-                               "Score": [kmeans_score, dt_accuracy]}))
+        # Display the evaluation results
+        st.subheader("Evaluation Results")
+        results = pd.DataFrame({
+            "Method": ["KMeans (Silhouette Score)", "Decision Tree (Accuracy)"],
+            "Score": [kmeans_score, dt_accuracy]
+        })
+        st.write(results)
 
+# Functions to run KMeans and Decision Tree
+def run_kmeans(data, k):
+    kmeans = KMeans(n_clusters=k)
+    kmeans.fit(data)
+    labels = kmeans.labels_
+    score = silhouette_score(data, labels)
+    return labels, score
 
+def run_decision_tree(X, y, max_depth):
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    dt = DecisionTreeClassifier(max_depth=max_depth)
+    dt.fit(X_train, y_train)
+    y_pred = dt.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    return accuracy
