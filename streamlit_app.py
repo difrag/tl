@@ -31,7 +31,7 @@ st.set_page_config(
 )
 
 # Add a title and description
-st.title("Γεια σοτ Βασιλικηη :)")
+st.title("Ανέβασε τα ντάτα σου εδώ για να τη βρεις")
 st.write("Upload a tab-separated TXT file (no header) and explore the data using KMeans clustering and Decision Tree classification.")
 
 # Create a file uploader widget
