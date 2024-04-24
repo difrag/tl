@@ -5,7 +5,7 @@ from sklearn.metrics import silhouette_score
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
-
+from sklearn.preprocessing import LabelEncoder
 
 # Set page configuration
 st.set_page_config(
@@ -33,6 +33,11 @@ if uploaded_file is not None:
     # Display a preview of the data
     st.subheader("Data Preview")
     st.write(data.head())
+    #encode strings into nums for kmean to work properly
+    data, _ = encode_string_columns_to_num(data)
+    # Display a preview of the changed data
+    st.subheader("Num Data Preview")
+    st.write(data.head())
 
 # Create a sidebar for model options
 st.sidebar.title("Model Configuration")
@@ -40,6 +45,16 @@ st.sidebar.title("Model Configuration")
 # Create number input widgets for KMeans and Decision Tree
 n_clusters = st.sidebar.number_input("Number of Clusters for KMeans", min_value=2, value=2)
 max_depth = st.sidebar.number_input("Max Depth for Decision Tree", min_value=1, value=3)
+
+# Fucntion to make string values numerical 
+def encode_string_columns_to_num(data):
+    label_encoders = {}
+    for column in data.columns:
+        if data[column].dtype == 'object' or data[column].dtype == 'string' :
+            le = LabelEncoder()
+            data[column] = le.fit_transform(data[column])
+            label_encoders[column] = le
+    return data, label_encoders
 
 # Functions to run KMeans and Decision Tree
 def run_kmeans(data, k):
