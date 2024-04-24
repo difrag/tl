@@ -22,15 +22,16 @@ st.write("Upload a tab-separated TXT file (no header) and explore the data using
 # Create a file uploader widget
 uploaded_file = st.file_uploader("Upload a file")
 
-# Fucntion to make string values numerical 
-def encode_string_columns_to_num(data.iloc[1:, :-1]):  # Dont use first row and last column
+# Fucntion to make string values numerical
+data2 = data.iloc[1:, :-1] # Dont use first row and last column
+def encode_string_columns_to_num(data2):  # Dont use first row and last column
     label_encoders = {}
     for column in data.columns:
-        if data[column].dtype == 'object' or data[column].dtype == 'string' :
+        if data2[column].dtype == 'object' or data2[column].dtype == 'string' :
             le = LabelEncoder()
-            data[column] = le.fit_transform(data[column])
+            data2[column] = le.fit_transform(data2[column])
             label_encoders[column] = le
-    return data, label_encoders
+    return data2, label_encoders
 
 if uploaded_file is not None:
     try:
@@ -47,7 +48,7 @@ if uploaded_file is not None:
     data, _ = encode_string_columns_to_num(data)
     # Display a preview of the changed data
     st.subheader("Num Data Preview")
-    st.write(data.head())
+    st.write(data2.head())
 
 # Create a sidebar for model options
 st.sidebar.title("Model Configuration")
