@@ -43,13 +43,14 @@ if uploaded_file is not None:
             data = pd.read_csv(uploaded_file, sep=',', header=None)
         else:
             data = pd.read_excel(uploaded_file, sep=',', header=None)
-            st.write("Data preview:")
-            st.dataframe(df.head())
-            # Display a preview of the data
-            st.subheader("Data Preview(1)")
-            st.write(data.head())
     except Exception as e:
         st.error(f"Error processing file: {e}")
+st.write("Data preview:")
+st.dataframe(df.head())
+# Display a preview of the data
+st.subheader("Data Preview(1)")
+st.write(data.head())
+
 
     # Create a sidebar for model options
     st.sidebar.title("Model Options")
