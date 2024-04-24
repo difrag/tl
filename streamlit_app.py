@@ -30,10 +30,9 @@ if uploaded_file is not None:
             data = pd.read_excel(uploaded_file, sep=',', header=None)
     except Exception as e:
         st.error(f"Error processing file: {e}")
-
-# Display a preview of the data
-st.subheader("Data Preview")
-st.write(data.head())
+    # Display a preview of the data
+    st.subheader("Data Preview")
+    st.write(data.head())
 
 # Create a sidebar for model options
 st.sidebar.title("Model Configuration")
