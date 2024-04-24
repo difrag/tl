@@ -45,9 +45,9 @@ if uploaded_file is not None:
             data = pd.read_excel(uploaded_file, sep=',', header=None)
             st.write("Data preview:")
             st.dataframe(df.head())
-    # Display a preview of the data
-    st.subheader("Data Preview(1)")
-    st.write(data.head())
+            # Display a preview of the data
+            st.subheader("Data Preview(1)")
+            st.write(data.head())
 except Exception as e:
         st.error(f"Error processing file: {e}")
 
