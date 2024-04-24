@@ -46,7 +46,7 @@ if uploaded_file is not None:
     except Exception as e:
         st.error(f"Error processing file: {e}")
 st.write("Data preview:")
-st.dataframe(df.head())
+st.dataframe(data.head())
 # Display a preview of the data
 st.subheader("Data Preview(1)")
 st.write(data.head())
