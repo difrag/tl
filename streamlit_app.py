@@ -23,7 +23,7 @@ st.write("Upload a tab-separated TXT file (no header) and explore the data using
 uploaded_file = st.file_uploader("Upload a file")
 
 # Fucntion to make string values numerical 
-def encode_string_columns_to_num(data):
+def encode_string_columns_to_num(data.iloc[1:, :-1]):  # Dont use first row and last column
     label_encoders = {}
     for column in data.columns:
         if data[column].dtype == 'object' or data[column].dtype == 'string' :
