@@ -51,30 +51,29 @@ st.dataframe(df.head())
 st.subheader("Data Preview(1)")
 st.write(data.head())
 
+# Create a sidebar for model options
+st.sidebar.title("Model Options")
 
-    # Create a sidebar for model options
-    st.sidebar.title("Model Options")
+# Create number input widgets for KMeans and Decision Tree
+n_clusters = st.sidebar.number_input("Number of Clusters for KMeans", min_value=2, value=2)
+max_depth = st.sidebar.number_input("Max Depth for Decision Tree", min_value=1, value=3)
 
-    # Create number input widgets for KMeans and Decision Tree
-    n_clusters = st.sidebar.number_input("Number of Clusters for KMeans", min_value=2, value=2)
-    max_depth = st.sidebar.number_input("Max Depth for Decision Tree", min_value=1, value=3)
+# Run the analysis when the user clicks the button
+if st.button("Start Analysis"):
+    # Separate the features and target
+    features = data.iloc[:, :-1]
+    target = data.iloc[:, -1]
 
-    # Run the analysis when the user clicks the button
-    if st.button("Start Analysis"):
-        # Separate the features and target
-        features = data.iloc[:, :-1]
-        target = data.iloc[:, -1]
+    # Run KMeans and Decision Tree
+    kmeans_labels, kmeans_score = run_kmeans(features, n_clusters)
+    dt_accuracy = run_decision_tree(features, target, max_depth)
 
-        # Run KMeans and Decision Tree
-        kmeans_labels, kmeans_score = run_kmeans(features, n_clusters)
-        dt_accuracy = run_decision_tree(features, target, max_depth)
-
-        # Display the evaluation results
-        st.subheader("Evaluation Results")
-        results = pd.DataFrame({
-            "Method": ["KMeans (Silhouette Score)", "Decision Tree (Accuracy)"],
-            "Score": [kmeans_score, dt_accuracy]
-        })
-        st.write(results)
+    # Display the evaluation results
+    st.subheader("Evaluation Results")
+    results = pd.DataFrame({
+        "Method": ["KMeans (Silhouette Score)", "Decision Tree (Accuracy)"],
+        "Score": [kmeans_score, dt_accuracy]
+    })
+    st.write(results)
 
 
