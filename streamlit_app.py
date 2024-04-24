@@ -35,11 +35,11 @@ st.title("Ανέβασε τα ντάτα σου εδώ για να τη βρει
 st.write("Upload a tab-separated TXT file (no header) and explore the data using KMeans clustering and Decision Tree classification.")
 
 # Create a file uploader widget
-uploaded_file = st.file_uploader("Upload a file", type="txt")
+uploaded_file = st.file_uploader("Upload a file")
 
 if uploaded_file is not None:
     # Read the uploaded file as a DataFrame
-    data = pd.read_csv(uploaded_file, sep='\t', header=None)
+    data = pd.read_csv(uploaded_file, sep=',', header=None)
 
     # Display a preview of the data
     st.subheader("Data Preview")
