@@ -6,21 +6,6 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
-# Functions to run KMeans and Decision Tree
-def run_kmeans(data, k):
-    kmeans = KMeans(n_clusters=k)
-    kmeans.fit(data)
-    labels = kmeans.labels_
-    score = silhouette_score(data, labels)
-    return labels, score
-
-def run_decision_tree(X, y, max_depth):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-    dt = DecisionTreeClassifier(max_depth=max_depth)
-    dt.fit(X_train, y_train)
-    y_pred = dt.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    return accuracy
 
 # Set page configuration
 st.set_page_config(
@@ -45,14 +30,13 @@ if uploaded_file is not None:
             data = pd.read_excel(uploaded_file, sep=',', header=None)
     except Exception as e:
         st.error(f"Error processing file: {e}")
-st.write("Data preview:")
-st.dataframe(data.head())
+
 # Display a preview of the data
-st.subheader("Data Preview(1)")
+st.subheader("Data Preview")
 st.write(data.head())
 
 # Create a sidebar for model options
-st.sidebar.title("Model Options")
+st.sidebar.title("Model Configuration")
 
 # Create number input widgets for KMeans and Decision Tree
 n_clusters = st.sidebar.number_input("Number of Clusters for KMeans", min_value=2, value=2)
@@ -75,5 +59,20 @@ if st.button("Start Analysis"):
         "Score": [kmeans_score, dt_accuracy]
     })
     st.write(results)
+# Functions to run KMeans and Decision Tree
+def run_kmeans(data, k):
+    kmeans = KMeans(n_clusters=k)
+    kmeans.fit(data)
+    labels = kmeans.labels_
+    score = silhouette_score(data, labels)
+    return labels, score
+
+def run_decision_tree(X, y, max_depth):
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    dt = DecisionTreeClassifier(max_depth=max_depth)
+    dt.fit(X_train, y_train)
+    y_pred = dt.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    return accuracy
 
 
