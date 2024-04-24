@@ -48,7 +48,7 @@ if uploaded_file is not None:
             # Display a preview of the data
             st.subheader("Data Preview(1)")
             st.write(data.head())
-except Exception as e:
+    except Exception as e:
         st.error(f"Error processing file: {e}")
 
     # Create a sidebar for model options
