@@ -60,8 +60,8 @@ def run_decision_tree(X, y, max_depth):
 # Run the analysis when the user clicks the button
 if st.button("Start Analysis"):
     # Separate the features and target
-    features = data.iloc[:, :-1]
-    target = data.iloc[:, -1]
+    features = data.iloc[1:, :-1] # Dont use first row and last column
+    target = data.iloc[:, -1]     # label = target (?)
 
     # Run KMeans and Decision Tree
     kmeans_labels, kmeans_score = run_kmeans(features, n_clusters)
