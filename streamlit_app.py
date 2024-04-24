@@ -26,7 +26,7 @@ uploaded_file = st.file_uploader("Upload a file")
 data2 = data.iloc[1:, :-1] # Dont use first row and last column
 def encode_string_columns_to_num(data2):  # Dont use first row and last column
     label_encoders = {}
-    for column in data.columns:
+    for column in data2.columns:
         if data2[column].dtype == 'object' or data2[column].dtype == 'string' :
             le = LabelEncoder()
             data2[column] = le.fit_transform(data2[column])
