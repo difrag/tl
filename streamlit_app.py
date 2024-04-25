@@ -37,14 +37,14 @@ if uploaded_file is not None:
     st.write(data.head())
     # Fucntion to make string values numerical
     data2 = data.iloc[1:, :-1] # Dont use first row and last column
-    def encode_string_columns_to_num(data2):  # Dont use first row and last column
+    def encode_string_columns_to_num(data2):
         label_encoders = {}
         for column in data2.columns:
-            if data2[column].dtype == 'object' or data2[column].dtype == 'string' :
+            if data2[column].dtype == 'object' or data2[column].dtype == 'string':
                 le = LabelEncoder()
                 data2[column] = le.fit_transform(data2[column])
                 label_encoders[column] = le
-            return data2, label_encoders
+        return data2, label_encoders
     #encode strings into nums for kmean to work properly
     data2, _ = encode_string_columns_to_num(data2)
     # Display a preview of the changed data
