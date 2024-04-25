@@ -49,6 +49,7 @@ if uploaded_file is not None:
     # Display a preview of the changed data
     st.subheader("Num Data Preview")
     st.write(data.head())
+    st.write("hi)
 
 # Create a sidebar for model options
 st.sidebar.title("Model Configuration")
