@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 # Add a title and description
-st.title("Tabular Data Analysis with KMeans and Decision Tree")
+st.title("111111111111111Tabular Data Analysis with KMeans and Decision Tree")
 st.write("Upload a CSV or Excel file with tabular data, and the app will transform text data into numerical values, show the transformed data, and apply KMeans clustering and Decision Tree classification.")
 
 # Create a file uploader widget
