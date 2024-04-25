@@ -44,14 +44,14 @@ if uploaded_file is not None:
     else:
         # Display a preview of the original data
         st.subheader("Original Data Preview")
-        st.write(data.head())
+        st.write(data.head(50))
 
         # Encode string columns to numerical values
         data, label_encoders = encode_string_columns_to_num(data)
 
         # Display a preview of the transformed data
         st.subheader("Transformed Data Preview")
-        st.write(data.head())
+        st.write(data.head(50))
 
         # Create a sidebar for model options
         st.sidebar.title("Model Configuration")
