@@ -36,14 +36,14 @@ if uploaded_file is not None:
     try:
         # Read the uploaded file
         if uploaded_file.name.endswith(".csv"):
-            data = pd.read_csv(uploaded_file, header=0)
+            data = pd.read_csv(uploaded_file, header=0,dtype=object)
             # Read the first row as column names
             column_names = data.iloc[0]
             if not all(isinstance(name, str) for name in column_names):  # Check if all names are strings
                 st.error("The first row should contain column names. Please check the file.")
                 return
         else:
-            data = pd.read_excel(uploaded_file, header=0)
+            data = pd.read_excel(uploaded_file, header=0,dtype=object)
             if not all(isinstance(name, str) for name in column_names):  # Check if all names are strings
                 st.error("The first row should contain column names. Please check the file.")
                 return
