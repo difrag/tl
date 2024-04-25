@@ -26,7 +26,7 @@ uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xls
 def encode_string_columns_to_num(data):
     label_encoders = {}
     for column in data.columns:
-        if data[column].dtype == 'object' or data[column].dtype == 'string':
+        if column! = age and data[column].dtype == 'object' or data[column].dtype == 'string':
             le = LabelEncoder()
             data[column] = le.fit_transform(data[column])
             label_encoders[column] = le
