@@ -43,9 +43,9 @@ if uploaded_file is not None:
                 le = LabelEncoder()
                 data[column] = le.fit_transform(data[column])
                 label_encoders[column] = le
-        return label_encoders
+        return data, label_encoders
     # Encode strings into nums for kmean to work properly
-    encode_string_columns_to_num(data)
+    data, _ = encode_string_columns_to_num(data)
     # Display a preview of the changed data
     st.subheader("Num Data Preview")
     st.write(data.head())
