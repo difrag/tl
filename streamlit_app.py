@@ -90,4 +90,7 @@ if uploaded_file is not None:
             # Display the evaluation results
             st.subheader("Evaluation Results")
             results = pd.DataFrame({
-                "Method": ["KMeans (
+                "Method": ["KMeans (Silhouette Score)", "Decision Tree (Accuracy)"],
+                "Score": [kmeans_score, dt_accuracy]
+            })
+            st.write(results)
