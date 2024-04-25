@@ -21,6 +21,7 @@ st.write("Upload a tab-separated TXT file (no header) and explore the data using
 
 # Create a file uploader widget
 uploaded_file = st.file_uploader("Upload a file")
+
 # Function to make string values numerical
 def encode_string_columns_to_num(data):
     label_encoders = {}
@@ -31,25 +32,21 @@ def encode_string_columns_to_num(data):
             label_encoders[column] = le
     return data, label_encoders
 
-
 if uploaded_file is not None:
     try:
-        if uploaded_file.name.endswith(".csv"):
-            data = pd.read_csv(uploaded_file, sep=',', header=None)
-        else:
-            data = pd.read_excel(uploaded_file, sep=',', header=None)
+        # Read the file as a tab-separated TXT file
+        data = pd.read_csv(uploaded_file, sep='\t', header=None)
     except Exception as e:
         st.error(f"Error processing file: {e}")
     # Display a preview of the data
     st.subheader("Data Preview")
     st.write(data.head())
-    
+
     # Encode strings into nums for kmean to work properly
     data, label_encoders = encode_string_columns_to_num(data)
     # Display a preview of the changed data
     st.subheader("Num Data Preview")
     st.write(data.head())
-    st.write("hi)
 
 # Create a sidebar for model options
 st.sidebar.title("Model Configuration")
@@ -57,7 +54,6 @@ st.sidebar.title("Model Configuration")
 # Create number input widgets for KMeans and Decision Tree
 n_clusters = st.sidebar.number_input("Number of Clusters for KMeans", min_value=2, value=2)
 max_depth = st.sidebar.number_input("Max Depth for Decision Tree", min_value=1, value=3)
-
 
 # Functions to run KMeans and Decision Tree
 def run_kmeans(data, k):
@@ -78,19 +74,9 @@ def run_decision_tree(X, y, max_depth):
 # Run the analysis when the user clicks the button
 if st.button("Start Analysis"):
     # Separate the features and target
-    features = data.iloc[1:, :-1] # Dont use first row and last column
+    features = data.iloc[1:, :-1] # Don't use first row and last column
     target = data.iloc[:, -1]     # label = target (?)
 
     # Run KMeans and Decision Tree
     kmeans_labels, kmeans_score = run_kmeans(features, n_clusters)
-    dt_accuracy = run_decision_tree(features, target, max_depth)
-
-    # Display the evaluation results
-    st.subheader("Evaluation Results")
-    results = pd.DataFrame({
-        "Method": ["KMeans (Silhouette Score)", "Decision Tree (Accuracy)"],
-        "Score": [kmeans_score, dt_accuracy]
-    })
-    st.write(results)
-
-
+    dt_accuracy = run_decision_tree(features, target
