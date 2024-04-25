@@ -35,21 +35,20 @@ if uploaded_file is not None:
     # Display a preview of the data
     st.subheader("Data Preview")
     st.write(data.head())
-    # Fucntion to make string values numerical
-    data2 = data.iloc[1:, :-1] # Dont use first row and last column
-    def encode_string_columns_to_num(data2):
+    # Function to make string values numerical
+    def encode_string_columns_to_num(data):
         label_encoders = {}
-        for column in data2.columns:
-            if data2[column].dtype == 'object' or data2[column].dtype == 'string':
+        for column in data.columns:
+            if data[column].dtype == 'object' or data[column].dtype == 'string':
                 le = LabelEncoder()
-                data2[column] = le.fit_transform(data2[column])
+                data[column] = le.fit_transform(data[column])
                 label_encoders[column] = le
-        return data2, label_encoders
-    #encode strings into nums for kmean to work properly
-    data2, _ = encode_string_columns_to_num(data2)
+        return data, label_encoders
+    # Encode strings into nums for kmean to work properly
+    data, _ = encode_string_columns_to_num(data)
     # Display a preview of the changed data
     st.subheader("Num Data Preview")
-    st.write(data2.head())
+    st.write(data.head())
 
 # Create a sidebar for model options
 st.sidebar.title("Model Configuration")
