@@ -21,7 +21,15 @@ st.write("Upload a tab-separated TXT file (no header) and explore the data using
 
 # Create a file uploader widget
 uploaded_file = st.file_uploader("Upload a file")
-
+# Function to make string values numerical
+def encode_string_columns_to_num(data):
+    label_encoders = {}
+    for column in data.columns:
+        if data[column].dtype == 'object' or data[column].dtype == 'string':
+            le = LabelEncoder()
+            data[column] = le.fit_transform(data[column])
+            label_encoders[column] = le
+    return data, label_encoders
 
 
 if uploaded_file is not None:
@@ -35,17 +43,9 @@ if uploaded_file is not None:
     # Display a preview of the data
     st.subheader("Data Preview")
     st.write(data.head())
-    # Function to make string values numerical
-    def encode_string_columns_to_num(data):
-        label_encoders = {}
-        for column in data.columns:
-            if data[column].dtype == 'object' or data[column].dtype == 'string':
-                le = LabelEncoder()
-                data[column] = le.fit_transform(data[column])
-                label_encoders[column] = le
-        return label_encoders
+    
     # Encode strings into nums for kmean to work properly
-    encode_string_columns_to_num(data)
+    data, label_encoders = encode_string_columns_to_num(data)
     # Display a preview of the changed data
     st.subheader("Num Data Preview")
     st.write(data.head())
