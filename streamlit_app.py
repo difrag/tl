@@ -36,9 +36,9 @@ if uploaded_file is not None:
     try:
         # Read the uploaded file
         if uploaded_file.name.endswith(".csv"):
-            data = pd.read_csv(uploaded_file, dtype=object)
+            data = pd.read_csv(uploaded_file, header=0, dtype=object)
         else:
-            data = pd.read_excel(uploaded_file, dtype=object)
+            data = pd.read_excel(uploaded_file, header=0, dtype=object)
     except Exception as e:
         st.error(f"Error processing file: {e}")
     else:
