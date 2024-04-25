@@ -26,7 +26,7 @@ uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xls
 def encode_string_columns_to_num(data):
     label_encoders = {}
     for column in data.columns:
-        if data[column].dtype == 'object' or data[column].dtype == 'string':
+        if column != 'age' and data[column].dtype == 'object' or data[column].dtype == 'string':
             le = LabelEncoder()
             data[column] = le.fit_transform(data[column])
             label_encoders[column] = le
@@ -37,8 +37,16 @@ if uploaded_file is not None:
         # Read the uploaded file
         if uploaded_file.name.endswith(".csv"):
             data = pd.read_csv(uploaded_file, header=0)
+            # Read the first row as column names
+            column_names = data.iloc[0]
+            if not all(isinstance(name, str) for name in column_names):  # Check if all names are strings
+                st.error("The first row should contain column names. Please check the file.")
+                return
         else:
             data = pd.read_excel(uploaded_file, header=0)
+            if not all(isinstance(name, str) for name in column_names):  # Check if all names are strings
+                st.error("The first row should contain column names. Please check the file.")
+                return
     except Exception as e:
         st.error(f"Error processing file: {e}")
     else:
