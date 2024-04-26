@@ -32,24 +32,36 @@ def encode_string_columns_to_num(data):
             label_encoders[column] = le
     return data, label_encoders
 
-if uploaded_file is not None:
+# ... (previous code remains the same)
+
+# Function to process the uploaded file
+def process_file(uploaded_file):
     try:
         # Read the uploaded file
         if uploaded_file.name.endswith(".csv"):
-            data = pd.read_csv(uploaded_file, header=0,dtype=object)
-            # Read the first row as column names
-            column_names = data.iloc[0]
-            if not all(isinstance(name, str) for name in column_names):  # Check if all names are strings
-                st.error("The first row should contain column names. Please check the file.")
-                return
+            data = pd.read_csv(uploaded_file, header=0, dtype=object)
         else:
-            data = pd.read_excel(uploaded_file, header=0,dtype=object)
-            if not all(isinstance(name, str) for name in column_names):  # Check if all names are strings
-                st.error("The first row should contain column names. Please check the file.")
-                return
+            data = pd.read_excel(uploaded_file, header=0, dtype=object)
+        
+        # Read the first row as column names
+        column_names = data.columns
+        if not all(isinstance(name, str) for name in column_names):  # Check if all names are strings
+            st.error("The first row should contain column names. Please check the file.")
+            return None  # Return None to indicate failure
+        
+        # Continue processing if the file is valid
+        # ... (rest of your processing code goes here)
+        return data  # Return the processed data
+
     except Exception as e:
         st.error(f"Error processing file: {e}")
-    #else
+        return None
+
+if uploaded_file is not None:
+    data = process_file(uploaded_file)
+    if data is not None:
+        # ... (rest of your code that depends on 'data' goes here)
+    
         # Display a preview of the original data
         st.subheader("Original Data Preview")
         st.write(data.head(50))
@@ -68,7 +80,7 @@ if uploaded_file is not None:
         n_clusters = st.sidebar.number_input("Number of Clusters for KMeans", min_value=2, value=2)
         max_depth = st.sidebar.number_input("Max Depth for Decision Tree", min_value=1, value=3)
 
-        # Functions to run KMeans and Decision Tree
+    # Functions to run KMeans and Decision Tree
         def run_kmeans(data, k):
             kmeans = KMeans(n_clusters=k)
             kmeans.fit(data)
