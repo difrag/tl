@@ -93,9 +93,9 @@ def run_decision_tree(X, y, max_depth):
     return accuracy
 
 # Separate the features and target
-    target_column = st.selectbox("Select the target column", processed_data.columns)
-    features = processed_data.drop(target_column, axis=1)
-    target = processed_data[target_column]
+target_column = st.selectbox("Select the target column", processed_data.columns)
+features = processed_data.drop(target_column, axis=1)
+target = processed_data[target_column]
     
 # Run the analysis when the user clicks the button
 if st.button("Start Analysis"):
