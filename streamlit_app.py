@@ -16,101 +16,97 @@ st.set_page_config(
 )
 
 # Add a title and description
-st.title("Tabular Data Analysis with KMeans and Decision Tree")
+st.title("Taaaaabular Data Analysis with KMeans and Decision Tree")
 st.write("Upload a CSV or Excel file with tabular data, and the app will transform text data into numerical values, show the transformed data, and apply KMeans clustering and Decision Tree classification.")
 
-# Create a file uploader widget
-uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx"])
 
 # Function to make string values numerical
-def encode_string_columns_to_num(data):
-    label_encoders = {}
-    for column in data.columns:
-        if column != 'age' and data[column].dtype == 'object' or data[column].dtype == 'string':
-            le = LabelEncoder()
-            data[column] = le.fit_transform(data[column])
-            label_encoders[column] = le
-    return data, label_encoders
-
-# ... (previous code remains the same)
-
-# Function to process the uploaded file
-def process_file(uploaded_file):
-    try:
-        # Read the uploaded file
-        if uploaded_file.name.endswith(".csv"):
-            data = pd.read_csv(uploaded_file, header=0, dtype=object)
-        else:
-            data = pd.read_excel(uploaded_file, header=0, dtype=object)
+def read_and_one_hot_encode(uploaded_file):
+    if uploaded_file is not None:
+        try:
+            # Attempt to read the uploaded file into a DataFrame
+            if uploaded_file.name.endswith('.csv'):
+                data = pd.read_csv(uploaded_file)
+            elif uploaded_file.name.endswith('.xlsx'):
+                data = pd.read_excel(uploaded_file)
+            else:
+                st.error("Unsupported file type. Please upload a CSV or Excel file.")
+                return None
+            
+            # Check if the DataFrame is empty
+            if data.empty:
+                st.error("The uploaded file is empty. Please upload a file with data.")
+                return None
+            
+            # Check for any missing values in the DataFrame
+            if data.isnull().values.any():
+                st.warning("The uploaded file contains missing values. "
+                           "These may need to be addressed before applying machine learning techniques.")
+                # One option is to fill missing values, or you can drop them
+                # data = data.fillna(method='ffill')  # Example: forward fill
+                # data = data.dropna()  # Example: drop rows with missing values
+            
+            # Select columns that are not of numeric type
+            non_numeric_columns = data.select_dtypes(exclude=['number']).columns
+            
+            # Apply one-hot encoding to non-numeric columns
+            data = pd.get_dummies(data, columns=non_numeric_columns)
+            
+            # Return the one-hot encoded DataFrame
+            return data
         
-        # Read the first row as column names
-        column_names = data.columns
-        if not all(isinstance(name, str) for name in column_names):  # Check if all names are strings
-            st.error("The first row should contain column names. Please check the file.")
-            return None  # Return None to indicate failure
-        
-        # Continue processing if the file is valid
-        # ... (rest of your processing code goes here)
-        return data  # Return the processed data
-
-    except Exception as e:
-        st.error(f"Error processing file: {e}")
+        except Exception as e:
+            st.error(f"An error occurred while processing the file: {e}")
+            return None
+    else:
+        # If no file was uploaded, inform the user
+        st.info("Please upload a file to proceed.")
         return None
 
-if uploaded_file is not None:
-    data = process_file(uploaded_file)
-    if data is not None:
-        # ... (rest of your code that depends on 'data' goes here)
-    
-        # Display a preview of the original data
-        st.subheader("Original Data Preview")
-        st.write(data.head(50))
+uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx"])
+processed_data = read_and_one_hot_encode(uploaded_file)
 
-        # Encode string columns to numerical values
-        data, label_encoders = encode_string_columns_to_num(data)
+if processed_data is not None:
+    # Now you can display the data or use it for machine learning
+    st.write(processed_data)
+    # Create a sidebar for model options
+    st.sidebar.title("Model Configuration")
 
-        # Display a preview of the transformed data
-        st.subheader("Transformed Data Preview")
-        st.write(data.head(50))
+    # Create number input widgets for KMeans and Decision Tree
+    n_clusters = st.sidebar.number_input("Number of Clusters for KMeans", min_value=2, value=2)
+    max_depth = st.sidebar.number_input("Max Depth for Decision Tree", min_value=1, value=3)
 
-        # Create a sidebar for model options
-        st.sidebar.title("Model Configuration")
+# Functions to run KMeans and Decision Tree
+def run_kmeans(data, k):
+        kmeans = KMeans(n_clusters=k)
+        kmeans.fit(data)
+        labels = kmeans.labels_
+        score = silhouette_score(data, labels)
+        return labels, score
 
-        # Create number input widgets for KMeans and Decision Tree
-        n_clusters = st.sidebar.number_input("Number of Clusters for KMeans", min_value=2, value=2)
-        max_depth = st.sidebar.number_input("Max Depth for Decision Tree", min_value=1, value=3)
+    def run_decision_tree(X, y, max_depth):
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+        dt = DecisionTreeClassifier(max_depth=max_depth)
+        dt.fit(X_train, y_train)
+        y_pred = dt.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+        return accuracy
 
-    # Functions to run KMeans and Decision Tree
-        def run_kmeans(data, k):
-            kmeans = KMeans(n_clusters=k)
-            kmeans.fit(data)
-            labels = kmeans.labels_
-            score = silhouette_score(data, labels)
-            return labels, score
+    # Run the analysis when the user clicks the button
+    if st.button("Start Analysis"):
+        # Separate the features and target
+        target_column = st.selectbox("Select the target column", data.columns)
+        features = data.drop(target_column, axis=1)
+        target = data[target_column]
 
-        def run_decision_tree(X, y, max_depth):
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-            dt = DecisionTreeClassifier(max_depth=max_depth)
-            dt.fit(X_train, y_train)
-            y_pred = dt.predict(X_test)
-            accuracy = accuracy_score(y_test, y_pred)
-            return accuracy
+        # Run KMeans and Decision Tree
+        kmeans_labels, kmeans_score = run_kmeans(features, n_clusters)
+        dt_accuracy = run_decision_tree(features, target, max_depth)
 
-        # Run the analysis when the user clicks the button
-        if st.button("Start Analysis"):
-            # Separate the features and target
-            target_column = st.selectbox("Select the target column", data.columns)
-            features = data.drop(target_column, axis=1)
-            target = data[target_column]
-
-            # Run KMeans and Decision Tree
-            kmeans_labels, kmeans_score = run_kmeans(features, n_clusters)
-            dt_accuracy = run_decision_tree(features, target, max_depth)
-
-            # Display the evaluation results
-            st.subheader("Evaluation Results")
-            results = pd.DataFrame({
-                "Method": ["KMeans (Silhouette Score)", "Decision Tree (Accuracy)"],
-                "Score": [kmeans_score, dt_accuracy]
-            })
-            st.write(results)
+        # Display the evaluation results
+        st.subheader("Evaluation Results")
+        results = pd.DataFrame({
+            "Method": ["KMeans (Silhouette Score)", "Decision Tree (Accuracy)"],
+            "Score": [kmeans_score, dt_accuracy]
+        })
+        st.write(results)
