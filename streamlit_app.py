@@ -6,6 +6,9 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import LabelEncoder
+from sklearn import datasets
+
+iris = datasets.load_iris()
 
 # Set page configuration
 st.set_page_config(
@@ -71,12 +74,16 @@ if processed_data is not None:
     st.write(processed_data)
     # Create a sidebar for model options
     st.sidebar.title("Model Configuration")
-
+    
     # Create number input widgets for KMeans and Decision Tree
     n_clusters = st.sidebar.number_input("Number of Clusters for KMeans", min_value=2, value=2)
     max_depth = st.sidebar.number_input("Max Depth for Decision Tree", min_value=1, value=3)
+    # Separate the features and target
+    target_column = st.selectbox("Select the target column", processed_data.columns)
+    features = processed_data.drop(target_column, axis=1)
+    target = processed_data[target_column]
+    # Functions to run KMeans and Decision Tree
 
-# Functions to run KMeans and Decision Tree
 def run_kmeans(data, k):
     kmeans = KMeans(n_clusters=k)
     kmeans.fit(data)
@@ -92,10 +99,7 @@ def run_decision_tree(X, y, max_depth):
     accuracy = accuracy_score(y_test, y_pred)
     return accuracy
 
-# Separate the features and target
-target_column = st.selectbox("Select the target column", processed_data.columns)
-features = processed_data.drop(target_column, axis=1)
-target = processed_data[target_column]
+
     
 # Run the analysis when the user clicks the button
 if st.button("Start Analysis"):
