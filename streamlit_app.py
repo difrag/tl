@@ -49,7 +49,7 @@ if uploaded_file is not None:
                 return
     except Exception as e:
         st.error(f"Error processing file: {e}")
-    else:
+    #else
         # Display a preview of the original data
         st.subheader("Original Data Preview")
         st.write(data.head(50))
