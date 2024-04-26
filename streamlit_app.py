@@ -78,35 +78,35 @@ if processed_data is not None:
 
 # Functions to run KMeans and Decision Tree
 def run_kmeans(data, k):
-        kmeans = KMeans(n_clusters=k)
-        kmeans.fit(data)
-        labels = kmeans.labels_
-        score = silhouette_score(data, labels)
-        return labels, score
+    kmeans = KMeans(n_clusters=k)
+    kmeans.fit(data)
+    labels = kmeans.labels_
+    score = silhouette_score(data, labels)
+    return labels, score
 
-    def run_decision_tree(X, y, max_depth):
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-        dt = DecisionTreeClassifier(max_depth=max_depth)
-        dt.fit(X_train, y_train)
-        y_pred = dt.predict(X_test)
-        accuracy = accuracy_score(y_test, y_pred)
-        return accuracy
+def run_decision_tree(X, y, max_depth):
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    dt = DecisionTreeClassifier(max_depth=max_depth)
+    dt.fit(X_train, y_train)
+    y_pred = dt.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    return accuracy
 
-    # Run the analysis when the user clicks the button
-    if st.button("Start Analysis"):
-        # Separate the features and target
-        target_column = st.selectbox("Select the target column", data.columns)
-        features = data.drop(target_column, axis=1)
-        target = data[target_column]
+# Run the analysis when the user clicks the button
+if st.button("Start Analysis"):
+    # Separate the features and target
+    target_column = st.selectbox("Select the target column", processed_data.columns)
+    features = processed_data.drop(target_column, axis=1)
+    target = processed_data[target_column]
 
-        # Run KMeans and Decision Tree
-        kmeans_labels, kmeans_score = run_kmeans(features, n_clusters)
-        dt_accuracy = run_decision_tree(features, target, max_depth)
+    # Run KMeans and Decision Tree
+    kmeans_labels, kmeans_score = run_kmeans(features, n_clusters)
+    dt_accuracy = run_decision_tree(features, target, max_depth)
 
-        # Display the evaluation results
-        st.subheader("Evaluation Results")
-        results = pd.DataFrame({
-            "Method": ["KMeans (Silhouette Score)", "Decision Tree (Accuracy)"],
-            "Score": [kmeans_score, dt_accuracy]
-        })
-        st.write(results)
+    # Display the evaluation results
+    st.subheader("Evaluation Results")
+    results = pd.DataFrame({
+        "Method": ["KMeans (Silhouette Score)", "Decision Tree (Accuracy)"],
+        "Score": [kmeans_score, dt_accuracy]
+    })
+    st.write(results)
