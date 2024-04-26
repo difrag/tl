@@ -92,20 +92,20 @@ def run_decision_tree(X, y, max_depth):
     accuracy = accuracy_score(y_test, y_pred)
     return accuracy
 
-# Run the analysis when the user clicks the button
-if st.button("Start Analysis"):
-    # Separate the features and target
+# Separate the features and target
     target_column = st.selectbox("Select the target column", processed_data.columns)
     features = processed_data.drop(target_column, axis=1)
     target = processed_data[target_column]
-
+    
+# Run the analysis when the user clicks the button
+if st.button("Start Analysis"):
     # Run KMeans and Decision Tree
     kmeans_labels, kmeans_score = run_kmeans(features, n_clusters)
     dt_accuracy = run_decision_tree(features, target, max_depth)
 
     # Display the evaluation results
     st.subheader("Evaluation Results")
-    results = pd.DataFrame({
+    results = pd.DataFrame({ 
         "Method": ["KMeans (Silhouette Score)", "Decision Tree (Accuracy)"],
         "Score": [kmeans_score, dt_accuracy]
     })
