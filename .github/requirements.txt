@@ -5,3 +5,4 @@ streamlit
 cython
 click>=7.0,<8.0
 matplotlib
+python=3.8
