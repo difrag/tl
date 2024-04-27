@@ -1,19 +1,30 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score, mean_squared_error
+from sklearn.metrics import accuracy_score, mean_squared_error, confusion_matrix
 from sklearn.pipeline import Pipeline
+
+def plot_metrics(labels, preds, model_name):
+    """Function to plot confusion matrix and return figure."""
+    cm = confusion_matrix(labels, preds, normalize='true')
+    fig, ax = plt.subplots()
+    cax = ax.matshow(cm, cmap=plt.cm.Blues)
+    plt.title('Confusion Matrix for ' + model_name)
+    fig.colorbar(cax)
+    ax.set_xticklabels([''] + ['Negative', 'Positive'])
+    ax.set_yticklabels([''] + ['Negative', 'Positive'])
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    return fig
 
 def main():
     st.title('Dynamic ML App')
     st.write("Upload a CSV file. The app will automatically use the last column as the target for prediction, and add predictions as a new column.")
-
-    # Model selection
-    model_type = st.selectbox("Select Model Type", ["Random Forest", "KNN"])
 
     # File uploader
     uploaded_file = st.file_uploader("Choose a file", type="csv")
@@ -52,34 +63,49 @@ def main():
                 ('num', numeric_transformer, numeric_features),
                 ('cat', categorical_transformer, categorical_features)])
 
-        # Define the model based on user selection
-        if model_type == "Random Forest":
-            if task_type == 'Classification':
-                model = RandomForestClassifier(n_estimators=100, random_state=42)
-            else:
-                model = RandomForestRegressor(n_estimators=100, random_state=42)
-        elif model_type == "KNN":
-            model = KNeighborsClassifier(n_neighbors=5)
+        # Define the models
+        rf_model = RandomForestClassifier(n_estimators=100, random_state=42) if task_type == 'Classification' \
+            else RandomForestRegressor(n_estimators=100, random_state=42)
+        knn_model = KNeighborsClassifier(n_neighbors=5)
 
-        # Create and train the pipeline
-        clf = Pipeline(steps=[('preprocessor', preprocessor),
-                              ('classifier', model)])
-        clf.fit(X_train, y_train)
+        # Create and train the pipelines
+        rf_clf = Pipeline(steps=[('preprocessor', preprocessor),
+                                 ('classifier', rf_model)])
+        knn_clf = Pipeline(steps=[('preprocessor', preprocessor),
+                                  ('classifier', knn_model)])
+        
+        rf_clf.fit(X_train, y_train)
+        knn_clf.fit(X_train, y_train)
 
         # Predictions and evaluation
-        y_pred = clf.predict(X_test)
-        data['Predicted'] = clf.predict(X)  # Predict on the entire dataset for a new column
+        rf_pred = rf_clf.predict(X_test)
+        knn_pred = knn_clf.predict(X_test)
+        
+        # Add predictions as new columns to the original data
+        data['RF Predicted'] = rf_clf.predict(X)
+        data['KNN Predicted'] = knn_clf.predict(X)
 
-        if task_type == 'Classification':
-            score = accuracy_score(y_test, y_pred)
-            st.write('Accuracy:', score)
-        else:
-            score = mean_squared_error(y_test, y_pred)
-            st.write('MSE:', score)
+        # Tabs for results
+        tab1, tab2 = st.tabs(["Random Forest", "K-Nearest Neighbors"])
 
-        # Show updated DataFrame with Predictions
-        st.write("Updated Data with Predictions:")
-        st.write(data.head(50))
+        with tab1:
+            st.write('Random Forest Results')
+            if task_type == 'Classification':
+                rf_score = accuracy_score(y_test, rf_pred)
+                st.write('Accuracy:', rf_score)
+                st.pyplot(plot_metrics(y_test, rf_pred, "Random Forest"))
+            else:
+                rf_score = mean_squared_error(y_test, rf_pred)
+                st.write('MSE:', rf_score)
+            st.write(data[['RF Predicted']].head(50))
 
-if __name__ == "__main__":
-    main()
+        with tab2:
+            st.write('K-Nearest Neighbors Results')
+            if task_type == 'Classification':
+                knn_score = accuracy_score(y_test, knn_pred)
+                st.write('Accuracy:', knn_score)
+                st.pyplot(plot_metrics(y_test, knn_pred, "K-Nearest Neighbors"))
+            else:
+                knn_score = mean_squared_error(y_test, knn_pred)
+                st.write('MSE:', knn_score)
+            st.write(data[['KNN Predicted']].head(50))
