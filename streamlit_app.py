@@ -18,7 +18,7 @@ def main():
 
         # Display the dataset
         st.write("Data Preview:")
-        st.write(data.head())
+        st.write(data.head(50))
 
         # Automatically determine if the target is categorical or continuous
         if data.iloc[:, -1].dtype == 'object':
@@ -73,7 +73,7 @@ def main():
 
         # Show updated DataFrame
         st.write("Updated Data with Predictions:")
-        st.write(data.head())
+        st.write(data.head(50))
 
 if __name__ == "__main__":
     main()
