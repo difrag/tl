@@ -4,12 +4,16 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, mean_squared_error
 from sklearn.pipeline import Pipeline
 
 def main():
     st.title('Dynamic ML App')
-    st.write("Upload a CSV file. The app will automatically use the last column as the target for prediction and add predictions as a new column.")
+    st.write("Upload a CSV file. The app will automatically use the last column as the target for prediction, and add predictions as a new column.")
+
+    # Model selection
+    model_type = st.selectbox("Select Model Type", ["Random Forest", "KNN"])
 
     # File uploader
     uploaded_file = st.file_uploader("Choose a file", type="csv")
@@ -48,11 +52,14 @@ def main():
                 ('num', numeric_transformer, numeric_features),
                 ('cat', categorical_transformer, categorical_features)])
 
-        # Define the model
-        if task_type == 'Classification':
-            model = RandomForestClassifier(n_estimators=100, random_state=42)
-        else:
-            model = RandomForestRegressor(n_estimators=100, random_state=42)
+        # Define the model based on user selection
+        if model_type == "Random Forest":
+            if task_type == 'Classification':
+                model = RandomForestClassifier(n_estimators=100, random_state=42)
+            else:
+                model = RandomForestRegressor(n_estimators=100, random_state=42)
+        elif model_type == "KNN":
+            model = KNeighborsClassifier(n_neighbors=5)
 
         # Create and train the pipeline
         clf = Pipeline(steps=[('preprocessor', preprocessor),
@@ -61,7 +68,6 @@ def main():
 
         # Predictions and evaluation
         y_pred = clf.predict(X_test)
-        # Add predictions as a new column to the original data
         data['Predicted'] = clf.predict(X)  # Predict on the entire dataset for a new column
 
         if task_type == 'Classification':
@@ -71,7 +77,7 @@ def main():
             score = mean_squared_error(y_test, y_pred)
             st.write('MSE:', score)
 
-        # Show updated DataFrame
+        # Show updated DataFrame with Predictions
         st.write("Updated Data with Predictions:")
         st.write(data.head(50))
 
