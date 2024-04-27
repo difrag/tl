@@ -1,94 +1,111 @@
-
 import streamlit as st
 import pandas as pd
-from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score
-from sklearn.tree import DecisionTreeClassifier
+import matplotlib.pyplot as plt
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, mean_squared_error, confusion_matrix
+from sklearn.pipeline import Pipeline
 
-# Set page configuration
-st.set_page_config(
-    page_title="KMeans and Decision Tree Application",
-    page_icon="1🧠1",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+def plot_metrics(labels, preds, model_name):
+    """Function to plot confusion matrix and return figure."""
+    cm = confusion_matrix(labels, preds, normalize='true')
+    fig, ax = plt.subplots()
+    cax = ax.matshow(cm, cmap=plt.cm.Blues)
+    plt.title('Confusion Matrix for ' + model_name)
+    fig.colorbar(cax)
+    ax.set_xticklabels([''] + ['Negative', 'Positive'])
+    ax.set_yticklabels([''] + ['Negative', 'Positive'])
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    return fig
 
-# Add a title and description
-st.title("111111111111111Tabular Data Analysis with KMeans and Decision Tree")
-st.write("Upload a CSV or Excel file with tabular data, and the app will transform text data into numerical values, show the transformed data, and apply KMeans clustering and Decision Tree classification.")
+def main():
+    st.title('Dynamic ML App')
+    st.write("Upload a CSV file. The app will automatically use the last column as the target for prediction, and add predictions as a new column.")
 
-# Create a file uploader widget
-uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx"])
+    # File uploader
+    uploaded_file = st.file_uploader("Choose a file", type="csv")
+    if uploaded_file is not None:
+        data = pd.read_csv(uploaded_file)
 
-# Function to make string values numerical
-def encode_string_columns_to_num(data):
-    label_encoders = {}
-    for column in data.columns:
-        if data[column].dtype == 'object' or data[column].dtype == 'string':
-            le = LabelEncoder()
-            data[column] = le.fit_transform(data[column])
-            label_encoders[column] = le
-    return data, label_encoders
+        # Display the dataset
+        st.write("Data Preview:")
+        st.write(data.head(50))
 
-if uploaded_file is not None:
-    try:
-        # Read the uploaded file
-        if uploaded_file.name.endswith(".csv"):
-            data = pd.read_csv(uploaded_file)
+        # Automatically determine if the target is categorical or continuous
+        if data.iloc[:, -1].dtype == 'object':
+            task_type = 'Classification'
         else:
-            data = pd.read_excel(uploaded_file)
-    except Exception as e:
-        st.error(f"Error processing file: {e}")
-    else:
-        # Display a preview of the original data
-        st.subheader("Original Data Preview")
-        st.write(data.head())
+            task_type = 'Regression'
 
-        # Encode string columns to numerical values
-        data, label_encoders = encode_string_columns_to_num(data)
+        # Dynamic target and features setup
+        X = data.iloc[:, :-1]  # all columns except the last one
+        y = data.iloc[:, -1]   # the last column as the target
 
-        # Display a preview of the transformed data
-        st.subheader("Transformed Data Preview")
-        st.write(data.head())
+        # Split the dataset
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-        # Create a sidebar for model options
-        st.sidebar.title("Model Configuration")
+        # Preprocessing & model pipeline setup
+        numeric_features = X.select_dtypes(include=['int64', 'float64']).columns
+        categorical_features = X.select_dtypes(exclude=['int64', 'float64']).columns
 
-        # Create number input widgets for KMeans and Decision Tree
-        n_clusters = st.sidebar.number_input("Number of Clusters for KMeans", min_value=2, value=2)
-        max_depth = st.sidebar.number_input("Max Depth for Decision Tree", min_value=1, value=3)
+        numeric_transformer = Pipeline(steps=[
+            ('scaler', StandardScaler())])
 
-        # Functions to run KMeans and Decision Tree
-        def run_kmeans(data, k):
-            kmeans = KMeans(n_clusters=k)
-            kmeans.fit(data)
-            labels = kmeans.labels_
-            score = silhouette_score(data, labels)
-            return labels, score
+        categorical_transformer = Pipeline(steps=[
+            ('onehot', OneHotEncoder(handle_unknown='ignore'))])
 
-        def run_decision_tree(X, y, max_depth):
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-            dt = DecisionTreeClassifier(max_depth=max_depth)
-            dt.fit(X_train, y_train)
-            y_pred = dt.predict(X_test)
-            accuracy = accuracy_score(y_test, y_pred)
-            return accuracy
+        preprocessor = ColumnTransformer(
+            transformers=[
+                ('num', numeric_transformer, numeric_features),
+                ('cat', categorical_transformer, categorical_features)])
 
-        # Run the analysis when the user clicks the button
-        if st.button("Start Analysis"):
-            # Separate the features and target
-            target_column = st.selectbox("Select the target column", data.columns)
-            features = data.drop(target_column, axis=1)
-            target = data[target_column]
+        # Define the models
+        rf_model = RandomForestClassifier(n_estimators=100, random_state=42) if task_type == 'Classification' \
+            else RandomForestRegressor(n_estimators=100, random_state=42)
+        knn_model = KNeighborsClassifier(n_neighbors=5)
 
-            # Run KMeans and Decision Tree
-            kmeans_labels, kmeans_score = run_kmeans(features, n_clusters)
-            dt_accuracy = run_decision_tree(features, target, max_depth)
+        # Create and train the pipelines
+        rf_clf = Pipeline(steps=[('preprocessor', preprocessor),
+                                 ('classifier', rf_model)])
+        knn_clf = Pipeline(steps=[('preprocessor', preprocessor),
+                                  ('classifier', knn_model)])
+        
+        rf_clf.fit(X_train, y_train)
+        knn_clf.fit(X_train, y_train)
 
-            # Display the evaluation results
-            st.subheader("Evaluation Results")
-            results = pd.DataFrame({
-                "Method": ["KMeans (
+        # Predictions and evaluation
+        rf_pred = rf_clf.predict(X_test)
+        knn_pred = knn_clf.predict(X_test)
+        
+        # Add predictions as new columns to the original data
+        data['RF Predicted'] = rf_clf.predict(X)
+        data['KNN Predicted'] = knn_clf.predict(X)
+
+        # Tabs for results
+        tab1, tab2 = st.tabs(["Random Forest", "K-Nearest Neighbors"])
+
+        with tab1:
+            st.write('Random Forest Results')
+            if task_type == 'Classification':
+                rf_score = accuracy_score(y_test, rf_pred)
+                st.write('Accuracy:', rf_score)
+                st.pyplot(plot_metrics(y_test, rf_pred, "Random Forest"))
+            else:
+                rf_score = mean_squared_error(y_test, rf_pred)
+                st.write('MSE:', rf_score)
+            st.write(data[['RF Predicted']].head(50))
+
+        with tab2:
+            st.write('K-Nearest Neighbors Results')
+            if task_type == 'Classification':
+                knn_score = accuracy_score(y_test, knn_pred)
+                st.write('Accuracy:', knn_score)
+                st.pyplot(plot_metrics(y_test, knn_pred, "K-Nearest Neighbors"))
+            else:
+                knn_score = mean_squared_error(y_test, knn_pred)
+                st.write('MSE:', knn_score)
+            st.write(data[['KNN Predicted']].head(50))
