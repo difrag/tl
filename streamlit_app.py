@@ -6,9 +6,6 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import LabelEncoder
-from sklearn import datasets
-
-iris = datasets.load_iris()
 
 # Set page configuration
 st.set_page_config(
@@ -30,8 +27,10 @@ def read_and_one_hot_encode(uploaded_file):
             # Attempt to read the uploaded file into a DataFrame
             if uploaded_file.name.endswith('.csv'):
                 data = pd.read_csv(uploaded_file)
+                st.write(data)
             elif uploaded_file.name.endswith('.xlsx'):
                 data = pd.read_excel(uploaded_file)
+                st.write(data)
             else:
                 st.error("Unsupported file type. Please upload a CSV or Excel file.")
                 return None
@@ -70,11 +69,9 @@ uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xls
 processed_data = read_and_one_hot_encode(uploaded_file)
 
 if processed_data is not None:
-    # Now you can display the data or use it for machine learning
     st.write(processed_data)
     # Create a sidebar for model options
     st.sidebar.title("Model Configuration")
-    
     # Create number input widgets for KMeans and Decision Tree
     n_clusters = st.sidebar.number_input("Number of Clusters for KMeans", min_value=2, value=2)
     max_depth = st.sidebar.number_input("Max Depth for Decision Tree", min_value=1, value=3)
