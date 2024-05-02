@@ -9,7 +9,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.cluster import SpectralClustering, AgglomerativeClustering
 from sklearn.metrics import accuracy_score, confusion_matrix, silhouette_score, f1_score
 from sklearn.pipeline import Pipeline
-import seaborn as sns
+#import seaborn as sns
 import os.path 
 
 # Function to plot confusion matrix
