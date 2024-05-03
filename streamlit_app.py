@@ -4,11 +4,13 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
-from sklearn.pipeline import Pipeline
+from sklearn.cluster import KMeans, DBSCAN
 import matplotlib.pyplot as plt
 import os.path
+
 
 # Function to label encode categorical features
 def apply_label_encoding(data, categorical_columns):
@@ -30,6 +32,21 @@ def plot_confusion_matrix(labels, preds, model_name):
     ax.set_xlabel('Predicted')
     ax.set_ylabel('Actual')
     plt.title(f'Confusion Matrix for {model_name}')
+    return fig
+
+# Function to plot clustering results
+def plot_clusters(data, labels, title):
+    # Ensure data is a DataFrame
+    if isinstance(data, np.ndarray):
+        # If it's an ndarray, convert to DataFrame with dummy column names
+        data = pd.DataFrame(data, columns=[f'Feature_{i+1}' for i in range(data.shape[1])])
+    
+    fig, ax = plt.subplots(figsize=(8, 6))
+    scatter = ax.scatter(data.iloc[:, 0], data.iloc[:, 1], c=labels, cmap='viridis', s=50)
+    plt.title(title)
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
+    fig.colorbar(scatter)
     return fig
 
 # Main function for Streamlit app
@@ -67,25 +84,24 @@ def main():
         st.write(preprocessed_data.head())
 
         # Step 6: Further processing and analysis
-        # Example: Train/test split, feature scaling, etc.
         if not preprocessed_data.empty:
-            # Separate features and target (assume the last column is the target)
+            # Separate features and target (assuming the last column is the target)
             X = preprocessed_data.iloc[:, :-1]  # Features
             y = preprocessed_data.iloc[:, -1]  # Target
-            
+
             # Split into training and testing sets
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
             # Apply scaling to numeric features
             scaler = StandardScaler()
-            X_train_scaled = scaler.fit_transform(X_train[numeric_features])
-            X_test_scaled = scaler.transform(X_test[numeric_features])
+            X_train_scaled = scaler.fit_transform(X_train)  # Using all columns for scaling
+            X_test_scaled = scaler.transform(X_test)
 
             # Step 7: Basic visualization
             tab1, tab2 = st.tabs(["Classification", "Clustering"])
-            
+
             with tab1:
-                # Example: Random Forest Classifier
+                # Random Forest Classifier
                 rf_clf = RandomForestClassifier(n_estimators=100, random_state=42)
                 rf_clf.fit(X_train_scaled, y_train)
 
@@ -100,8 +116,35 @@ def main():
 
                 st.pyplot(plot_confusion_matrix(y_test, rf_preds, "Random Forest"))
 
+                # Logistic Regression Classifier
+                lr_clf = LogisticRegression()
+                lr_clf.fit(X_train_scaled, y_train)
+
+                lr_preds = lr_clf.predict(X_test_scaled)
+
+                # Calculate accuracy and F1-score
+                lr_accuracy = accuracy_score(y_test, lr_preds)
+                lr_f1 = f1_score(y_test, lr_preds, average='weighted')
+
+                st.write("Logistic Regression Accuracy:", lr_accuracy)
+                st.write("Logistic Regression F1-Score:", lr_f1)
+
+                st.pyplot(plot_confusion_matrix(y_test, lr_preds, "Logistic Regression"))
+
             with tab2:
-                st.write("Clustering visualization coming soon...")
+                # Clustering with KMeans
+                kmeans = KMeans(n_clusters=3, random_state=42)
+                kmeans_labels = kmeans.fit_predict(X_train_scaled)
+
+                st.write("KMeans Clustering Results")
+                st.pyplot(plot_clusters(X_train_scaled, kmeans_labels, "KMeans Clustering"))
+
+                # Clustering with DBSCAN
+                dbscan = DBSCAN(eps=0.5, min_samples=5)
+                dbscan_labels = dbscan.fit_predict(X_train_scaled)
+
+                st.write("DBSCAN Clustering Results")
+                st.pyplot(plot_clusters(X_train_scaled, dbscan_labels, "DBSCAN Clustering"))
             
     else:
         st.write("Please upload a file to continue.")
