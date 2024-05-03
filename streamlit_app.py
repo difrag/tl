@@ -1,159 +1,111 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+import numpy as np
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.cluster import SpectralClustering, AgglomerativeClustering
-from sklearn.metrics import accuracy_score, confusion_matrix, silhouette_score, f1_score
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 from sklearn.pipeline import Pipeline
-#import seaborn as sns
-import os.path 
+import matplotlib.pyplot as plt
+import os.path
+
+# Function to label encode categorical features
+def apply_label_encoding(data, categorical_columns):
+    le = LabelEncoder()
+    encoded_data = data.copy()  # Make a copy of the original data
+    for col in categorical_columns:
+        if encoded_data[col].dtype == 'object':
+            encoded_data[col] = le.fit_transform(encoded_data[col])
+    return encoded_data
 
 # Function to plot confusion matrix
 def plot_confusion_matrix(labels, preds, model_name):
     cm = confusion_matrix(labels, preds, normalize='true')
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=(6, 6))
     cax = ax.matshow(cm, cmap=plt.cm.Blues)
-    plt.title(f'Confusion Matrix for {model_name}')
     fig.colorbar(cax)
-    ax.set_xticklabels(['', 'Negative', 'Positive'])
-    ax.set_yticklabels(['', 'Negative', 'Positive'])
-    plt.xlabel('Predicted')
-    plt.ylabel('Actual')
+    ax.set_xticklabels([''] + list(set(labels)))
+    ax.set_yticklabels([''] + list(set(labels)))
+    ax.set_xlabel('Predicted')
+    ax.set_ylabel('Actual')
+    plt.title(f'Confusion Matrix for {model_name}')
     return fig
 
-# Function to plot clustering results
-def plot_clusters(data, labels, title):
-    fig, ax = plt.subplots(figsize=(10, 8))
-    scatter = ax.scatter(data.iloc[:, 0], data.iloc[:, 1], c=labels, cmap='viridis', s=50)
-    plt.title(title)
-    plt.xlabel('Feature 1')
-    plt.ylabel('Feature 2')
-    fig.colorbar(scatter, ax=ax)
-    return fig
-
-# Main function
+# Main function for Streamlit app
 def main():
-    st.title("Dynamic ML App")
-    st.write("Upload a CSV or Excel file.")
-    st.write("Attention: The app will automatically use the last column as the target for prediction.")
-    st.write("Attention: The app has no NaN or missing value handling capabilities (for now).")
-    uploaded_file = st.file_uploader("Upload a file and run analysis ", type=["csv", "xlsx", "xls"])
+    st.title("Streamlit Data Preprocessing App")
+
+    # Step 1: File upload and handling
+    st.write("Upload a CSV or Excel file to preprocess.")
+    uploaded_file = st.file_uploader("Upload your file:", type=["csv", "xlsx", "xls"])
 
     if uploaded_file is not None:
+        # Step 2: Read the uploaded file
         file_extension = os.path.splitext(uploaded_file.name)[1].lower()
         if file_extension == ".csv":
             data = pd.read_csv(uploaded_file)  # Read CSV file
         elif file_extension in [".xls", ".xlsx"]:
-            data = pd.read_excel(uploaded_file, engine='openpyxl')  # Read Excel files with openpyxl
+            data = pd.read_excel(uploaded_file, engine='openpyxl')  # Read Excel file
 
-        # Sidebar for user input
-        with st.sidebar:
-            n_clusters = st.slider("Number of Clusters", 2, 10, 3)  
-            n_estimators = st.slider("Number of Estimators (Random Forest)", 10, 500, 100) 
-            n_neighbors = st.slider("Number of Neighbors (KNN)", 1, 20, 5)  
-
-        # Display data preview
+        # Display a preview of the data
         st.write("Data Preview:")
-        st.write(data.head(50))
+        st.write(data.head())
 
-        # Determine task type based on the last column
-        if data.iloc[:, -1].dtype == 'object':
-            task_type = 'Classification'
-        else:
-            task_type = 'Regression'
+        # Step 3: Identify categorical and numerical features
+        categorical_features = data.select_dtypes(include=['object']).columns
+        numeric_features = data.select_dtypes(include=['int64', 'float64']).columns
         
-        # Separate features and target
-        X = data.iloc[:, :-1]
-        y = data.iloc[:, -1]
+        st.write("Categorical Features:", list(categorical_features))
+        st.write("Numeric Features:", list(numeric_features))
 
-        # Preprocessing pipelines
-        numeric_features = X.select_dtypes(include=['int64', 'float64']).columns
-        categorical_features = X.select_dtypes(exclude=['int64', 'float64']).columns
+        # Step 4: Apply label encoding to categorical features
+        preprocessed_data = apply_label_encoding(data, categorical_features)
 
-        numeric_transformer = Pipeline(steps=[('scaler', StandardScaler())])
-        categorical_transformer = Pipeline(steps=[('onehot', OneHotEncoder(handle_unknown='ignore'))])
+        # Step 5: Display the preprocessed data
+        st.write("Preprocessed Data:")
+        st.write(preprocessed_data.head())
 
-        preprocessor = ColumnTransformer(
-            transformers=[
-                ('num', numeric_transformer, numeric_features),
-                ('cat', categorical_transformer, categorical_features)
-            ]
-        )
-
-        # Apply the preprocessing pipeline to features
-        preprocessed_X = preprocessor.fit_transform(X)
-
-        # Ensure dense data if needed
-        if hasattr(preprocessed_X, "toarray"):
-            preprocessed_X = preprocessed_X.toarray()
-
-        # Convert to DataFrame with correct preprocessed data
-        preprocessed_df = pd.DataFrame(preprocessed_X)  # Corrected assignment
-
-        # Ensure it's not empty
-        if preprocessed_df.empty:
-            st.write("Error: Preprocessed DataFrame is empty.")
-
-        # Correct assignment of features and target
-        X = preprocessed_df.iloc[:, :-1]  # Features
-        y = data.iloc[:, -1]  # Original target (not processed)
-
-        # Split into training and testing sets
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-        # Define classification models
-        rf_clf = RandomForestClassifier(n_estimators=n_estimators, random_state=42)  # Using slider value
-        knn_clf = KNeighborsClassifier(n_neighbors=n_neighbors)  # Using slider value
-
-        # Define clustering models
-        spectral_clust = SpectralClustering(n_clusters=n_clusters, random_state=42)  # Using slider value
-        hierarchical_clust = AgglomerativeClustering(n_clusters=n_clusters)
-
-        # Fit classification models
-        rf_clf.fit(X_train, y_train)  # Classification
-        knn_clf.fit(X_train, y_train)  # Classification
-
-        # Fit clustering models
-        spectral_labels = spectral_clust.fit_predict(X)  #clustering
-        hierarchical_labels = hierarchical_clust.fit_predict(X)  #clustering
-
-        # Predictions for classification
-        rf_pred = rf_clf.predict(X_test)  # Predictions from Random Forest
-        knn_pred = knn_clf.predict(X_test)  # Predictions from KNN
-
-        # Create tabs for classification and clustering
-        tab1, tab2, tab3 = st.tabs(["2D Visualization", "Classification", "Clustering"])
-
-        with tab1:
-            st.write("Dimensionality Reduction and Visualization")
-        with tab2:
-            rf_accuracy = accuracy_score(y_test, rf_pred)  # Accuracy of Random Forest
-            rf_f1 = f1_score(y_test, rf_clf.predict(X_test), average='weighted')  # F1 score of Random Forest
-            st.write("Random Forest Accuracy:", rf_accuracy)
-            st.write("Random Forest F1-Score:", rf_f1)
-            st.pyplot(plot_confusion_matrix(y_test, rf_pred, "Random Forest"))
-
+        # Step 6: Further processing and analysis
+        # Example: Train/test split, feature scaling, etc.
+        if not preprocessed_data.empty:
+            # Separate features and target (assume the last column is the target)
+            X = preprocessed_data.iloc[:, :-1]  # Features
+            y = preprocessed_data.iloc[:, -1]  # Target
             
-            knn_accuracy = accuracy_score(y_test, knn_pred)  # Accuracy of KNN
-            knn_f1 = f1_score(y_test, knn_clf.predict(X_test), average='weighted')
-            st.write("K-Nearest Neighbors Accuracy:", knn_accuracy)
-            st.write("K-Nearest Neighbors F1-Score:", knn_f1)
-            st.pyplot(plot_confusion_matrix(y_test, knn_pred, "K-Nearest Neighbors"))
+            # Split into training and testing sets
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-        # Results for clustering
-        with tab3:
-            spectral_silhouette = silhouette_score(X, spectral_labels)  # Spectral silhouette score of Spectral clustering
-            st.write("Spectral Clustering Silhouette Score:", spectral_silhouette)
-            st.pyplot(plot_clusters(X, spectral_labels, "Spectral Clustering"))  
+            # Apply scaling to numeric features
+            scaler = StandardScaler()
+            X_train_scaled = scaler.fit_transform(X_train[numeric_features])
+            X_test_scaled = scaler.transform(X_test[numeric_features])
 
-            hierarchical_silhouette = silhouette_score(X, hierarchical_labels)  # Hierarchical silhouette score
-            st.write("Hierarchical Clustering Silhouette Score:", hierarchical_silhouette)
-            st.pyplot(plot_clusters(X, hierarchical_labels, "Hierarchical Clustering"))  
+            # Step 7: Basic visualization
+            tab1, tab2 = st.tabs(["Classification", "Clustering"])
             
+            with tab1:
+                # Example: Random Forest Classifier
+                rf_clf = RandomForestClassifier(n_estimators=100, random_state=42)
+                rf_clf.fit(X_train_scaled, y_train)
 
-if __name__ is "__main__":
+                rf_preds = rf_clf.predict(X_test_scaled)
+
+                # Calculate accuracy and F1-score
+                rf_accuracy = accuracy_score(y_test, rf_preds)
+                rf_f1 = f1_score(y_test, rf_preds, average='weighted')
+
+                st.write("Random Forest Accuracy:", rf_accuracy)
+                st.write("Random Forest F1-Score:", rf_f1)
+
+                st.pyplot(plot_confusion_matrix(y_test, rf_preds, "Random Forest"))
+
+            with tab2:
+                st.write("Clustering visualization coming soon...")
+            
+    else:
+        st.write("Please upload a file to continue.")
+
+# Run the Streamlit app
+if __name__ == "__main__":
     main()
