@@ -5,9 +5,9 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix
 from sklearn.cluster import KMeans, DBSCAN
+from sklearn.metrics import silhouette_score, homogeneity_score, completeness_score
 import matplotlib.pyplot as plt
 import os.path
 
@@ -38,7 +38,6 @@ def plot_confusion_matrix(labels, preds, model_name):
 def plot_clusters(data, labels, title):
     # Ensure data is a DataFrame
     if isinstance(data, np.ndarray):
-        # If it's an ndarray, convert to DataFrame with dummy column names
         data = pd.DataFrame(data, columns=[f'Feature_{i+1}' for i in range(data.shape[1])])
     
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -53,17 +52,25 @@ def plot_clusters(data, labels, title):
 def main():
     st.title("Streamlit Data Preprocessing App")
 
+    # Sidebar controls for key parameters
+    with st.sidebar:
+        st.header("Parameter Controls")
+        n_clusters = st.slider("Number of Clusters (Clustering)", 2, 10, 3)  # Default is 3 clusters
+        n_estimators = st.slider("Number of Estimators (Random Forest)", 10, 500, 100)  # Default is 100 estimators
+        eps = st.slider("DBSCAN Epsilon", 0.1, 1.0, 0.5)  # DBSCAN epsilon parameter
+        min_samples = st.slider("DBSCAN Min Samples", 1, 10, 5)  # DBSCAN minimum samples parameter
+
     # Step 1: File upload and handling
     st.write("Upload a CSV or Excel file to preprocess.")
     uploaded_file = st.file_uploader("Upload your file:", type=["csv", "xlsx", "xls"])
 
     if uploaded_file is not None:
-        # Step 2: Read the uploaded file
+        # Step 2: Read the uploaded file based on extension
         file_extension = os.path.splitext(uploaded_file.name)[1].lower()
         if file_extension == ".csv":
             data = pd.read_csv(uploaded_file)  # Read CSV file
         elif file_extension in [".xls", ".xlsx"]:
-            data = pd.read_excel(uploaded_file, engine='openpyxl')  # Read Excel file
+            data = pd.read_excel(uploaded_file, engine='openpyxl')  # Read Excel file with openpyxl engine
 
         # Display a preview of the data
         st.write("Data Preview:")
@@ -94,25 +101,31 @@ def main():
 
             # Apply scaling to numeric features
             scaler = StandardScaler()
-            X_train_scaled = scaler.fit_transform(X_train)  # Using all columns for scaling
+            X_train_scaled = scaler.fit_transform(X_train)
             X_test_scaled = scaler.transform(X_test)
 
             # Step 7: Basic visualization
             tab1, tab2 = st.tabs(["Classification", "Clustering"])
 
+            # Classification tab
             with tab1:
-                # Random Forest Classifier
-                rf_clf = RandomForestClassifier(n_estimators=100, random_state=42)
+                # Random Forest Classifier with user-defined estimators
+                rf_clf = RandomForestClassifier(n_estimators=n_estimators, random_state=42)
                 rf_clf.fit(X_train_scaled, y_train)
 
                 rf_preds = rf_clf.predict(X_test_scaled)
 
-                # Calculate accuracy and F1-score
+                # Metrics for Random Forest
                 rf_accuracy = accuracy_score(y_test, rf_preds)
                 rf_f1 = f1_score(y_test, rf_preds, average='weighted')
+                rf_precision = precision_score(y_test, rf_preds, average='weighted')
+                rf_recall = recall_score(y_test, rf_preds, average='weighted')
 
-                st.write("Random Forest Accuracy:", rf_accuracy)
-                st.write("Random Forest F1-Score:", rf_f1)
+                st.write("Random Forest Metrics:")
+                st.write("Accuracy:", rf_accuracy)
+                st.write("F1-Score:", rf_f1)
+                st.write("Precision:", rf_precision)
+                st.write("Recall:", rf_recall)
 
                 st.pyplot(plot_confusion_matrix(y_test, rf_preds, "Random Forest"))
 
@@ -122,28 +135,46 @@ def main():
 
                 lr_preds = lr_clf.predict(X_test_scaled)
 
-                # Calculate accuracy and F1-score
+                # Metrics for Logistic Regression
                 lr_accuracy = accuracy_score(y_test, lr_preds)
                 lr_f1 = f1_score(y_test, lr_preds, average='weighted')
+                lr_precision = precision_score(y_test, lr_preds, average='weighted')
+                lr_recall = recall_score(y_test, lr_preds, average='weighted')
 
-                st.write("Logistic Regression Accuracy:", lr_accuracy)
-                st.write("Logistic Regression F1-Score:", lr_f1)
+                st.write("Logistic Regression Metrics:")
+                st.write("Accuracy:", lr_accuracy)
+                st.write("F1-Score:", lr_f1)
+                st.write("Precision:", lr_precision)
+                st.write("Recall:", lr_recall)
 
                 st.pyplot(plot_confusion_matrix(y_test, lr_preds, "Logistic Regression"))
 
+            # Clustering tab
             with tab2:
-                # Clustering with KMeans
-                kmeans = KMeans(n_clusters=3, random_state=42)
+                # Clustering with KMeans using user-defined clusters
+                kmeans = KMeans(n_clusters=n_clusters, random_state=42)
                 kmeans_labels = kmeans.fit_predict(X_train_scaled)
 
-                st.write("KMeans Clustering Results")
+                # Metrics for KMeans Clustering
+                kmeans_silhouette = silhouette_score(X_train_scaled, kmeans_labels)
+                kmeans_inertia = kmeans.inertia_
+
+                st.write("KMeans Clustering Metrics:")
+                st.write("Silhouette Score:", kmeans_silhouette)
+                st.write("Inertia:", kmeans_inertia)
+
                 st.pyplot(plot_clusters(X_train_scaled, kmeans_labels, "KMeans Clustering"))
 
-                # Clustering with DBSCAN
-                dbscan = DBSCAN(eps=0.5, min_samples=5)
+                # Clustering with DBSCAN with user-defined parameters
+                dbscan = DBSCAN(eps=eps, min_samples=min_samples)
                 dbscan_labels = dbscan.fit_predict(X_train_scaled)
 
-                st.write("DBSCAN Clustering Results")
+                # Metrics for DBSCAN Clustering
+                dbscan_silhouette = silhouette_score(X_train_scaled, dbscan_labels)
+
+                st.write("DBSCAN Clustering Metrics:")
+                st.write("Silhouette Score:", dbscan_silhouette)
+
                 st.pyplot(plot_clusters(X_train_scaled, dbscan_labels, "DBSCAN Clustering"))
             
     else:
