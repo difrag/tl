@@ -80,9 +80,11 @@ def plot_2d_visualization(data, labels, title):
 #
 def main():
     st.title("Streamlit Data Preprocessing and machine learning App")
-    st.header("Data Preprocessing and Machine Learning Analysis")
+    st.header("Dadadadadadata Preprocessing and Machine Learning Analysis")
     #Markdown description of app
-    st.markdown("This app demonstrates data preprocessing and analysis techniques using Streamlit. Upload a CSV or Excel file to preprocess the data, apply label encoding to categorical features, and visualize the results. The app includes classification, clustering, and 2D visualization tabs for exploring the data.")
+    st.markdown('''This app demonstrates data preprocessing and analysis techniques using Streamlit.
+                Upload a CSV or Excel file to preprocess the data, apply label encoding to categorical features and visualize the results. 
+                The app includes classification, clustering, and 2D visualization tabs for exploring the data.''')
     #st.set_option('deprecation.showPyplotGlobalUse', False) #To future-proof Streamlit apps, they recommend creating a figure explicitly with plt.subplots() and passing it to st.pyplot().
     
     # Sidebar controls for key parameters
