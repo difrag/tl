@@ -11,6 +11,7 @@ from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE, Isomap
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FixedLocator, FixedFormatter
 import seaborn as sns
 import os
 
@@ -37,8 +38,18 @@ def plot_confusion_matrix(labels, preds, model_name):
     fig, ax = plt.subplots(figsize=(6, 6))
     cax = ax.matshow(cm, cmap=plt.cm.Blues)
     fig.colorbar(cax)
-    ax.set_xticklabels([''] + list(set(labels)))
-    ax.set_yticklabels([''] + list(set(labels)))
+
+    tick_labels = list(set(labels))
+    tick_labels.sort()  # Ensure the labels are sorted for proper alignment to avoid UserWarning: FixedFormatter should only be used together with FixedLocator
+    
+    # Setting tick positions and labels
+    ax.set_xticks(range(len(tick_labels)))
+    ax.set_yticks(range(len(tick_labels)))
+    ax.xaxis.set_major_locator(FixedLocator(range(len(tick_labels))))
+    ax.xaxis.set_major_formatter(FixedFormatter(tick_labels))
+    ax.yaxis.set_major_locator(FixedLocator(range(len(tick_labels))))
+    ax.yaxis.set_major_formatter(FixedFormatter(tick_labels))
+
     ax.set_xlabel('Predicted')
     ax.set_ylabel('Actual')
     plt.title(f'Confusion Matrix for {model_name}')
@@ -127,7 +138,7 @@ def main():
             X_train_scaled = scaler.fit_transform(X_train)
             X_test_scaled = scaler.transform(X_test)
 
-            tab3, tab1, tab2, tab4, tab0 = st.tabs(["2D Visualization", "Classification", "Clustering", "Comparing of results", "Debug Tab"])
+            tab3, tab1, tab2, tab4, tab5, tab0 = st.tabs(["2D Visualization", "Classification", "Clustering", "Comparing of results", "Relevant information", "Debug Tab"])
 
             with tab0:
                 st.write(f"Uploaded file name: {uploaded_file.name}")
@@ -288,6 +299,7 @@ def main():
 
                 st.pyplot(plot_2d_visualization(isomap_transformed, y_train, "Isomap Visualization"))
                 st.write("Isomap: A nonlinear technique that seeks to preserve geodesic distances, useful for discovering complex structures and manifolds.")
+            
             with tab4:
                 st.title("Comparing Results")
                 st.header("Performance Metrics Comparison")
@@ -324,8 +336,35 @@ def main():
                 plt.ylabel("Score")
                 plt.xticks(rotation=35)
                 st.pyplot(fig)
-    else:
-        st.markdown("**Please upload a file to continue.**")
+
+            with tab5:
+                st.markdown("""
+                    ### Info
+
+                    **Features:**
+                    - **Upload and Preview:** Upload a CSV or Excel file and preview the data.
+                    - **Data Preprocessing:** Automatically handle categorical features by applying label encoding.
+                    - **Model Training:** Train and evaluate classification models (Random Forest and Logistic Regression) and visualize the results.
+                    - **Clustering:** Apply KMeans and DBSCAN clustering algorithms and visualize the clusters.
+                    - **Dimensionality Reduction:** Perform PCA, t-SNE and Isomap for 2D visualization of high-dimensional data.
+
+                    **How it Works:**
+                    - **File Upload:** Upload your data file. The application reads and preprocesses the data.
+                    - **Model Training:** Choose the parameters for Random Forest and Logistic Regression.
+                    - **Clustering:** Select the number of clusters for KMeans or adjust parameters for DBSCAN(epsilon and minimum samples).
+                    - **Visualization:** View 2D representations of your data using PCA, t-SNE  or Isomap.
+
+                    **Development Team:**
+                    - **Dimitris Fragkoulis:** Π2015191
+                    - **Konstantinos Nikolopoulos :** Π2016***
+                    - **Christos Grigorakos:** Π201****
+
+                    **Contact Information:**
+                    - **Email:** p15frag@ionio.gr
+                    - **Github:** [Dimitris](https://github.com/difrag), [Konstantinos](), [Christos]()
+                    """)      
+        else:
+            st.markdown("**Please upload a file to continue.**")
 
 if __name__ == "__main__":
     main()
