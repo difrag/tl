@@ -21,7 +21,11 @@ def generate_statistical_summary(data):
 
 # Function to check for missing values
 def check_missing_values(data):
-    return data.isnull().sum()
+    missing_values = data.isnull().sum()
+    if missing_values.empty:
+        return "No missing values detected in dataset."
+    else:
+        return missing_values
 
 # Function to label encode categorical features
 def apply_label_encoding(data, categorical_columns): 
@@ -39,16 +43,19 @@ def plot_confusion_matrix(labels, preds, model_name):
     cax = ax.matshow(cm, cmap=plt.cm.Blues)
     fig.colorbar(cax)
 
+    unique_labels = sorted(set(labels))
+    tick_positions = range(len(unique_labels))
+
     tick_labels = list(set(labels))
     tick_labels.sort()  # Ensure the labels are sorted for proper alignment to avoid UserWarning: FixedFormatter should only be used together with FixedLocator
     
     # Setting tick positions and labels
-    ax.set_xticks(range(len(tick_labels)))
-    ax.set_yticks(range(len(tick_labels)))
-    ax.xaxis.set_major_locator(FixedLocator(range(len(tick_labels))))
-    ax.xaxis.set_major_formatter(FixedFormatter(tick_labels))
-    ax.yaxis.set_major_locator(FixedLocator(range(len(tick_labels))))
-    ax.yaxis.set_major_formatter(FixedFormatter(tick_labels))
+    ax.set_xticks(tick_positions)
+    ax.set_yticks(tick_positions)
+    ax.xaxis.set_major_locator(FixedLocator(tick_positions))
+    ax.xaxis.set_major_formatter(FixedFormatter(unique_labels))
+    ax.yaxis.set_major_locator(FixedLocator(tick_positions))
+    ax.yaxis.set_major_formatter(FixedFormatter(unique_labels))
 
     ax.set_xlabel('Predicted')
     ax.set_ylabel('Actual')
@@ -84,10 +91,26 @@ def plot_2d_visualization(data, labels, title):
 def main():
     st.title("Run your data through our Machine Learning App")
     st.markdown('''This app demonstrates certain data preprocessing and analysis techniques using Streamlit.
-                Upload a CSV or Excel file to preprocess the data, apply label encoding to categorical features, and visualize the results.
-                The app includes classification, clustering, and 2D visualization tabs for exploring the data.''')
+                Upload a CSV or Excel file to preprocess the data, apply label encoding to categorical features, and visualize the results.''')
     
     uploaded_file = st.file_uploader("Upload your file:", type=["csv", "xlsx", "xls"])
+
+    st.markdown("""
+    <style>
+    .icon {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        background-image: url('https://example.com/icon.png'); /* Replace URL with your icon */
+        background-size: cover;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<div class="icon"></div>', unsafe_allow_html=True)
+
+
+    st.markdown('<div class="icon"></div>', unsafe_allow_html=True)
 
     if uploaded_file is not None:
         
@@ -138,7 +161,7 @@ def main():
             X_train_scaled = scaler.fit_transform(X_train)
             X_test_scaled = scaler.transform(X_test)
 
-            tab3, tab1, tab2, tab4, tab5, tab0 = st.tabs(["2D Visualization", "Classification", "Clustering", "Comparing of results", "Relevant information", "Debug Tab"])
+            tab3, tab1, tab2, tab4, tab5, tab0 = st.tabs(["2D Visualization", "Classification", "Clustering", "Comparing of results", "Info", "Debug Tab"])
 
             with tab0:
                 st.write(f"Uploaded file name: {uploaded_file.name}")
@@ -229,8 +252,10 @@ def main():
                 st.write(generate_statistical_summary(preprocessed_data))
                 st.markdown("---------------------")
 
-                st.write("Missing Values:")
-                st.write(check_missing_values(preprocessed_data))
+                st.write("Missing values")
+
+                missing_values_result = check_missing_values(preprocessed_data)
+                st.write(missing_values_result)
                 st.markdown("---------------------")
 
                 st.header("Data Distribution:")
@@ -339,9 +364,9 @@ def main():
 
             with tab5:
                 st.markdown("""
-                    ### Info
+                    ### Relevant information
 
-                    **Features:**
+                    **App features:**
                     - **Upload and Preview:** Upload a CSV or Excel file and preview the data.
                     - **Data Preprocessing:** Automatically handle categorical features by applying label encoding.
                     - **Model Training:** Train and evaluate classification models (Random Forest and Logistic Regression) and visualize the results.
@@ -355,12 +380,12 @@ def main():
                     - **Visualization:** View 2D representations of your data using PCA, t-SNE  or Isomap.
 
                     **Development Team:**
-                    - **Dimitris Fragkoulis:** Π2015191
-                    - **Konstantinos Nikolopoulos :** Π2016***
-                    - **Christos Grigorakos:** Π201****
+                    - **Fragkoulis Dimitris:** Π2015191 **Tasks 1 to 6** or more
+                    - **Nikolopoulos Konstantinos:** Π2016*** **Tasks 6 to 10** or more
+                    - **Grigorakos Christos:** Π201**** **Tasks 6 to 10** or more
 
                     **Contact Information:**
-                    - **Email:** p15frag@ionio.gr
+                    - **Email:** p15frag@ionio.gr, p16niko@ionio.gr, p17???grig@ionio.gr
                     - **Github:** [Dimitris](https://github.com/difrag), [Konstantinos](), [Christos]()
                     """)      
         else:
