@@ -34,7 +34,7 @@ docker-compose build
 docker-compose up
 ```
 ## Usage
-Open the streamlit [link](https://check-your-data.streamlit.app/) or follow the [Installation](#installation) steps for localhost usage and upload the dataset of your choice. Datasets used for testing during development : [Thyroid_Diff.csv](https://github.com/difrag/tl/files/15456731/Thyroid_Diff.csv) and [iris.csv](https://github.com/difrag/tl/files/15456730/iris.csv) You could use one of these to get started if you do not have one already. After the dataset is uploaded you are given a preview of the data uploaded and some options to configure the machine learning models. Different tabs are created to make the app navigation more intuitive.\
+Open the streamlit [link](https://check-your-data.streamlit.app/) or follow the [Installation](#installation) steps for localhost usage and upload the dataset of your choice. Datasets used for testing during development : [Thyroid_Diff.csv](https://github.com/difrag/tl/files/15456731/Thyroid_Diff.csv) and [iris.csv](https://github.com/difrag/tl/files/15456730/iris.csv) You could use one of these to get started if you do not have one already. After the dataset is uploaded you are given a preview of the data uploaded and some options to configure the machine learning models. Different tabs are created to make the app navigation more intuitive.
 
 ## Creators
 - **Fragkoulis Dimitris** - Π2015191
