@@ -14,6 +14,17 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 
+# Function that uses PCA to reduce dimensions before clustering
+def improve_clustering(X):
+    pca = PCA(n_components=2)
+    X_pca = pca.fit_transform(X)
+    
+    # Scaling the reduced dimensions
+    scaler = MinMaxScaler()
+    X_scaled = scaler.fit_transform(X_pca)
+    
+    return X_scaled
+    
 # Function to generate statistical summaries
 def generate_statistical_summary(data):
     return data.describe()
@@ -181,13 +192,16 @@ def main():
 
             with tab2:
                 if isinstance(X_train_scaled, np.ndarray) and X_train_scaled.size > 0:
+
+                    X_clustering = improve_clustering(X_train_scaled)
+                    
                     kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
-                    kmeans_labels = kmeans.fit_predict(X_train_scaled)
+                    kmeans_labels = kmeans.fit_predict(X_clustering)
                         
-                    kmeans_silhouette = silhouette_score(X_train_scaled, kmeans_labels)
+                    kmeans_silhouette = silhouette_score(X_clustering, kmeans_labels)
                     kmeans_inertia = kmeans.inertia_
 
-                    st.pyplot(plot_clusters(X_train_scaled, kmeans_labels, "KMeans Clustering"))
+                    st.pyplot(plot_clusters(X_clustering, kmeans_labels, "KMeans Clustering"))
 
                     st.write("KMeans Clustering Metrics:")
                     st.write("Silhouette Score:", kmeans_silhouette)
@@ -198,9 +212,9 @@ def main():
                     dbscan = DBSCAN(eps=eps, min_samples=min_samples)
                     dbscan_labels = dbscan.fit_predict(X_train_scaled)
                     if len(set(dbscan_labels)) > 1:  # Ensure DBSCAN has formed clusters
-                        dbscan_silhouette = silhouette_score(X_train_scaled, dbscan_labels)
+                        dbscan_silhouette = silhouette_score(X_clustering, dbscan_labels)
 
-                        st.pyplot(plot_clusters(X_train_scaled, dbscan_labels, "DBSCAN Clustering"))
+                        st.pyplot(plot_clusters(X_clustering, dbscan_labels, "DBSCAN Clustering"))
 
                         st.write("DBSCAN Clustering Metrics:")
                         st.write("Silhouette Score:", dbscan_silhouette)
@@ -233,8 +247,8 @@ def main():
                 st.markdown("---------------------")
                 
                 correlation_matrix = preprocessed_data.corr()
-                fig, ax = plt.subplots()
-                sns.heatmap(correlation_matrix, annot=True, cmap="coolwarm", ax=ax)
+                fig, ax = plt.subplots(figsize=14,12)
+                sns.heatmap(correlation_matrix, annot=True, cmap="coolwarm", ax=ax, fmt=".2f") # Round values to 2 decimal places for visual purposes mostly
                 ax.set_title("Correlation Heatmap")
                 st.pyplot(fig)
                 st.write("Correlation heatmaps are useful for feature selection, identifying multicollinearity (high correlation between features), and understanding the underlying structure of the data")
