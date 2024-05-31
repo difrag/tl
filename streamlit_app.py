@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import StandardScaler, LabelEncoder, MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -14,6 +14,17 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 
+# Function that uses PCA to reduce dimensions before clustering
+def improve_clustering(X):
+    pca = PCA(n_components=2)
+    X_pca = pca.fit_transform(X)
+    
+    # Scaling the reduced dimensions
+    scaler = MinMaxScaler()
+    X_scaled = scaler.fit_transform(X_pca)
+    
+    return X_scaled
+    
 # Function to generate statistical summaries
 def generate_statistical_summary(data):
     return data.describe()
@@ -71,7 +82,7 @@ def plot_2d_visualization(data, labels, title):
 
 # Main function for Streamlit app
 def main():
-    st.title("Run your data through our Machine Learning App")
+    st.title("Run your data through our Machine Learning App !")
     st.markdown('''This app demonstrates certain data preprocessing and analysis techniques using Streamlit.
                 Upload a CSV or Excel file to preprocess the data, apply label encoding to categorical features, and visualize the results.
                 The app includes classification, clustering, and 2D visualization tabs for exploring the data.''')
@@ -127,7 +138,7 @@ def main():
             X_train_scaled = scaler.fit_transform(X_train)
             X_test_scaled = scaler.transform(X_test)
 
-            tab3, tab1, tab2, tab4, tab0 = st.tabs(["2D Visualization", "Classification", "Clustering", "Comparing of results", "Debug Tab"])
+            tab3, tab1, tab2, tab4, tab5, tab0 = st.tabs(["2D Visualization", "Classification", "Clustering", "Comparing of results","Info", "Debug Tab"])
 
             with tab0:
                 st.write(f"Uploaded file name: {uploaded_file.name}")
@@ -181,13 +192,16 @@ def main():
 
             with tab2:
                 if isinstance(X_train_scaled, np.ndarray) and X_train_scaled.size > 0:
+
+                    X_clustering = improve_clustering(X_train_scaled)
+                    
                     kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
-                    kmeans_labels = kmeans.fit_predict(X_train_scaled)
+                    kmeans_labels = kmeans.fit_predict(X_clustering)
                         
-                    kmeans_silhouette = silhouette_score(X_train_scaled, kmeans_labels)
+                    kmeans_silhouette = silhouette_score(X_clustering, kmeans_labels)
                     kmeans_inertia = kmeans.inertia_
 
-                    st.pyplot(plot_clusters(X_train_scaled, kmeans_labels, "KMeans Clustering"))
+                    st.pyplot(plot_clusters(X_clustering, kmeans_labels, "KMeans Clustering"))
 
                     st.write("KMeans Clustering Metrics:")
                     st.write("Silhouette Score:", kmeans_silhouette)
@@ -198,9 +212,9 @@ def main():
                     dbscan = DBSCAN(eps=eps, min_samples=min_samples)
                     dbscan_labels = dbscan.fit_predict(X_train_scaled)
                     if len(set(dbscan_labels)) > 1:  # Ensure DBSCAN has formed clusters
-                        dbscan_silhouette = silhouette_score(X_train_scaled, dbscan_labels)
+                        dbscan_silhouette = silhouette_score(X_clustering, dbscan_labels)
 
-                        st.pyplot(plot_clusters(X_train_scaled, dbscan_labels, "DBSCAN Clustering"))
+                        st.pyplot(plot_clusters(X_clustering, dbscan_labels, "DBSCAN Clustering"))
 
                         st.write("DBSCAN Clustering Metrics:")
                         st.write("Silhouette Score:", dbscan_silhouette)
@@ -233,8 +247,8 @@ def main():
                 st.markdown("---------------------")
                 
                 correlation_matrix = preprocessed_data.corr()
-                fig, ax = plt.subplots()
-                sns.heatmap(correlation_matrix, annot=True, cmap="coolwarm", ax=ax)
+                fig, ax = plt.subplots(figsize=(14,12))
+                sns.heatmap(correlation_matrix, annot=True, cmap="coolwarm", ax=ax, fmt=".2f") # Round values to 2 decimal places for visual purposes mostly
                 ax.set_title("Correlation Heatmap")
                 st.pyplot(fig)
                 st.write("Correlation heatmaps are useful for feature selection, identifying multicollinearity (high correlation between features), and understanding the underlying structure of the data")
@@ -324,8 +338,34 @@ def main():
                 plt.ylabel("Score")
                 plt.xticks(rotation=35)
                 st.pyplot(fig)
+            with tab5:
+                st.markdown("""
+                    ### Relevant information
+
+                    **App features:**
+                    - **Upload and Preview:** Upload a CSV or Excel file and preview the data.
+                    - **Data Preprocessing:** Automatically handle categorical features by applying label encoding.
+                    - **Model Training:** Train and evaluate classification models (Random Forest and Logistic Regression) and visualize the results.
+                    - **Clustering:** Apply KMeans and DBSCAN clustering algorithms and visualize the clusters.
+                    - **Dimensionality Reduction:** Perform PCA, t-SNE and Isomap for 2D visualization of high-dimensional data.
+
+                    **How it Works:**
+                    - **File Upload:** Upload your data file. The application reads and preprocesses the data.
+                    - **Model Training:** Choose the parameters for Random Forest and Logistic Regression.
+                    - **Clustering:** Select the number of clusters for KMeans or adjust parameters for DBSCAN(epsilon and minimum samples).
+                    - **Visualization:** View 2D representations of your data using PCA, t-SNE  or Isomap.
+
+                    **Development Team:**
+                    - **Fragkoulis Dimitris:** Π2015191 **Tasks 1 to 10** 
+                    - **Nikolopoulos Konstantinos:** Π2016051 **Tasks 5 to 10** or more
+                    - **Grigorakos Christos:** Π2020146 **Tasks 7 to 10** or more
+
+                    **Contact development team with email at :**
+                    - p15frag@ionio.gr, p16niko@ionio.gr, p20grig@ionio.gr
+                    """)      
     else:
         st.markdown("**Please upload a file to continue.**")
 
+            
 if __name__ == "__main__":
     main()
