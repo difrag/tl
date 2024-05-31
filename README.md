@@ -12,7 +12,7 @@ A web app created for a university project that enables you to upload tabular da
 Step-by-step instructions on how to set up the project locally.
 
 ### Prerequisites
-Make sure you have the following software installed:
+Make sure you have the following software installed if you are running on windows (if not you already know what to do):
 - **Git**: [Download Git](https://git-scm.com/)
 - **Docker**: [Download Docker Desktop](https://www.docker.com/products/docker-desktop)
 - **WSL2**: [Download WSL](https://learn.microsoft.com/en-us/windows/wsl/install)
