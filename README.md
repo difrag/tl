@@ -1,4 +1,4 @@
-# [Check your data](https://check-your-data.streamlit.app/) - a steamlit webapp
+# [Check your data](https://check-ur-data.streamlit.app/) - a steamlit webapp
 ## Description
 A web app created for a university project that enables you to upload tabular datasets and get insights related to data statistics, missing values and data distribution. Machine learning training based on the uploaded data is also available to the user. Latest update also allows comparing results between different machine learning methods.
 
