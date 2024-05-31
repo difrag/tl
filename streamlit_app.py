@@ -82,7 +82,7 @@ def plot_2d_visualization(data, labels, title):
 
 # Main function for Streamlit app
 def main():
-    st.title("Run your data through our Machine Learning App")
+    st.title("Run your data through our Machine Learning App!!!!!!!!!!!!!!!!!!!!")
     st.markdown('''This app demonstrates certain data preprocessing and analysis techniques using Streamlit.
                 Upload a CSV or Excel file to preprocess the data, apply label encoding to categorical features, and visualize the results.
                 The app includes classification, clustering, and 2D visualization tabs for exploring the data.''')
